@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🦩 Flamingo Board
 
-## Getting Started
+A real-time collaborative Kanban board built with Next.js 15, Supabase, and TypeScript. Create workspaces, invite teammates, manage boards with drag-and-drop columns and cards, and see who's online — all in real time.
 
-First, run the development server:
+## Features
+
+- **Workspaces** — organize boards by team or project, invite members via shareable links
+- **Kanban boards** — columns and cards with drag-and-drop reordering
+- **Card details** — descriptions, labels, assignees, comments, due dates
+- **Real-time collaboration** — live board updates and presence indicators via Supabase Realtime
+- **Auth** — email/password registration and login with session persistence
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router, Server Actions) |
+| Database | Supabase (PostgreSQL + PostgREST + Realtime) |
+| Auth | Supabase Auth (GoTrue) |
+| Styling | Tailwind CSS + shadcn/ui |
+| Language | TypeScript |
+| Deployment | Docker (standalone Next.js output) |
+
+---
+
+## Setup
+
+### Prerequisites
+
+- [Node.js 20+](https://nodejs.org)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- [Supabase CLI](https://supabase.com/docs/guides/cli) — `npm install -g supabase`
+
+### 1. Clone and install
+
+```bash
+git clone git@github.com:Nadosha/Flamingo-board.git
+cd Flamingo-board
+npm install
+```
+
+### 2. Start local Supabase
+
+```bash
+npx supabase start
+```
+
+This spins up the full Supabase stack locally (PostgreSQL, Auth, PostgREST, Realtime, Studio). After it starts, note the output — you'll need the keys for the next step.
+
+Apply migrations (schema + RLS policies):
+
+```bash
+npx supabase db reset
+```
+
+### 3. Configure environment variables
+
+Create a `.env.local` file in the project root:
+
+```env
+# Public Supabase URL (used by browser and server)
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+
+# Anon key from `npx supabase status`
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
+
+# Service role key from `npx supabase status`
+# Used server-side to bypass RLS after auth verification
+SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
+
+# App URL for invite links
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+### 4a. Run in development mode
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4b. Run with Docker
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+docker compose up --build -d
+```
 
-## Learn More
+Open [http://localhost:3000](http://localhost:3000).
 
-To learn more about Next.js, take a look at the following resources:
+> **Note:** Docker reads environment from `.env.local`. Make sure it exists before building.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Environment Variables
 
-## Deploy on Vercel
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | yes | Supabase API URL (public, used in browser and server) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes | Supabase anon/publishable key |
+| `SUPABASE_SERVICE_ROLE_KEY` | yes | Supabase service role key — server-side only, never exposed to browser |
+| `NEXT_PUBLIC_APP_URL` | yes | Base URL for generating invite links |
+| `SUPABASE_INTERNAL_URL` | auto | Set in Docker to reach Supabase from inside the container (`http://host.docker.internal:54321`) |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Architecture & Design Decisions
+
+### Feature-Sliced Design (FSD)
+The codebase follows a simplified FSD structure: `shared → entities → features → widgets → app`. This keeps concerns separated — data access in `entities`, user interactions in `features`, compositions in `widgets`. Makes things easy to locate and avoids circular dependencies.
+
+### Server Actions for all mutations
+All writes go through Next.js Server Actions rather than API routes. This avoids building a separate REST/GraphQL layer, keeps the server-client boundary explicit, and provides automatic CSRF protection. The tradeoff is that optimistic UI requires more manual wiring compared to a client-side mutation library like React Query.
+
+### Service role key for server-side DB operations
+Local Supabase CLI v2 signs user JWTs with ES256 (EC key), but PostgREST 14 silently fails ES256 verification and falls back to the `anon` role — causing every RLS-protected write to fail. The fix: server actions use `createAdminClient()` with the `sb_secret_*` service role key. Kong's API gateway intercepts this and injects a valid HS256 service_role JWT that PostgREST accepts. Auth is still verified via the regular `createClient()` before any DB write, so user identity is always confirmed first.
+
+### Row-Level Security (RLS)
+All tables have RLS enabled. Helper functions `is_workspace_member()` and `is_workspace_admin()` are `SECURITY DEFINER` to prevent infinite recursion when policies on `workspace_members` query themselves. The `card_assignees.user_id` FK references `public.profiles` (not `auth.users`) so PostgREST can resolve the JOIN within the public schema.
+
+### Realtime via Supabase channels
+Board updates subscribe to `postgres_changes` filtered by `board_id`. Presence (online indicators) uses Supabase Presence channels. Both are encapsulated in custom hooks (`use-realtime-board`, `use-presence`) mounted at the board view level.
+
+---
+
+## What I'd Improve With More Time
+
+**Product**
+- Optimistic UI for drag-and-drop — currently waits for a server round-trip, causing a visible flicker
+- File attachments on cards via Supabase Storage
+- Board backgrounds — custom image or color
+- Activity log per card
+- Notifications for @mentions and assignments
+
+**Technical**
+- Fix the ES256/PostgREST root cause by configuring Supabase to sign with HS256 (`jwt_secret` in `config.toml`) instead of the service role key workaround
+- E2E tests with Playwright covering auth, workspace creation, and card drag-and-drop
+- Proper error boundaries with user-facing messages instead of exceptions bubbling to the Next.js error page
+- Pagination or virtual scrolling for large boards
+- CI/CD pipeline (GitHub Actions) with lint, type-check, and tests on every PR
+- Move to a managed Supabase project for production with proper secrets management
