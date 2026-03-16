@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
-import { Calendar, Trash2, User, MessageSquare } from 'lucide-react';
+import { Calendar, Trash2, MessageSquare, Eye, Pencil } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +12,6 @@ import {
 } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
 import { Textarea } from '@/shared/ui/textarea';
-import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import { Badge } from '@/shared/ui/badge';
@@ -37,6 +38,7 @@ export function CardDetailModal({ cardId, onClose, onCardDeleted }: Props) {
   const [card, setCard] = useState<CardDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingDescription, setEditingDescription] = useState(false);
+  const [mdPreview, setMdPreview] = useState(false);
   const [description, setDescription] = useState('');
   const [comment, setComment] = useState('');
   const [isPending, startTransition] = useTransition();
@@ -154,25 +156,51 @@ export function CardDetailModal({ cardId, onClose, onCardDeleted }: Props) {
 
                   {/* Description */}
                   <div>
-                    <Label className="text-xs text-muted-foreground uppercase tracking-wide mb-2 block">
-                      Description
-                    </Label>
-                    {editingDescription ? (
-                      <div className="space-y-2">
-                        <Textarea
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          placeholder="Add a more detailed description…"
-                          rows={4}
-                          autoFocus
-                          className="text-sm"
-                        />
-                        <div className="flex gap-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-xs text-muted-foreground uppercase tracking-wide">
+                        Description
+                      </Label>
+                      {editingDescription && (
+                        <div className="flex gap-1">
                           <Button
                             size="sm"
-                            onClick={handleSaveDescription}
-                            disabled={isPending}
+                            variant={mdPreview ? 'secondary' : 'ghost'}
+                            className="h-6 px-2 text-xs"
+                            onClick={() => setMdPreview(true)}
                           >
+                            <Eye className="h-3 w-3 mr-1" /> Preview
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={!mdPreview ? 'secondary' : 'ghost'}
+                            className="h-6 px-2 text-xs"
+                            onClick={() => setMdPreview(false)}
+                          >
+                            <Pencil className="h-3 w-3 mr-1" /> Edit
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    {editingDescription ? (
+                      <div className="space-y-2">
+                        {mdPreview ? (
+                          <div className="min-h-[100px] text-sm bg-secondary/50 rounded-md px-3 py-2 prose prose-sm max-w-none dark:prose-invert">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {description || '*No description*'}
+                            </ReactMarkdown>
+                          </div>
+                        ) : (
+                          <Textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Add a description… Markdown is supported"
+                            rows={5}
+                            autoFocus
+                            className="text-sm font-mono"
+                          />
+                        )}
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={handleSaveDescription} disabled={isPending}>
                             Save
                           </Button>
                           <Button
@@ -181,6 +209,7 @@ export function CardDetailModal({ cardId, onClose, onCardDeleted }: Props) {
                             onClick={() => {
                               setDescription(card.description ?? '');
                               setEditingDescription(false);
+                              setMdPreview(false);
                             }}
                           >
                             Cancel
@@ -190,9 +219,17 @@ export function CardDetailModal({ cardId, onClose, onCardDeleted }: Props) {
                     ) : (
                       <div
                         onClick={() => setEditingDescription(true)}
-                        className="min-h-[60px] text-sm text-muted-foreground bg-secondary/50 rounded-md px-3 py-2 cursor-pointer hover:bg-secondary transition-colors"
+                        className="min-h-[60px] text-sm bg-secondary/50 rounded-md px-3 py-2 cursor-pointer hover:bg-secondary transition-colors"
                       >
-                        {card.description || 'Add a more detailed description…'}
+                        {card.description ? (
+                          <div className="prose prose-sm max-w-none dark:prose-invert">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {card.description}
+                            </ReactMarkdown>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">Add a more detailed description…</span>
+                        )}
                       </div>
                     )}
                   </div>

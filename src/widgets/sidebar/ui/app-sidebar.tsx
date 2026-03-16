@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, LogOut, Settings } from 'lucide-react';
+import { LayoutGrid, LogOut, Settings, Sun, Moon, Monitor } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import {
   DropdownMenu,
@@ -26,6 +27,7 @@ interface Props {
 export function AppSidebar({ user }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -58,6 +60,29 @@ export function AppSidebar({ user }: Props) {
           Workspaces
         </Link>
       </nav>
+
+      {/* Theme toggle */}
+      <div className="px-3 pb-1">
+        <div className="flex items-center gap-1 rounded-md bg-secondary/50 p-1">
+          {(['light', 'system', 'dark'] as const).map((t) => {
+            const Icon = t === 'light' ? Sun : t === 'dark' ? Moon : Monitor;
+            return (
+              <button
+                key={t}
+                onClick={() => setTheme(t)}
+                className={`flex-1 flex items-center justify-center rounded p-1 transition-colors ${
+                  theme === t
+                    ? 'bg-background shadow-sm text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                title={t.charAt(0).toUpperCase() + t.slice(1)}
+              >
+                <Icon className="h-3.5 w-3.5" />
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* User */}
       <div className="border-t p-3">
