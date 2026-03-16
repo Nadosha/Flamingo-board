@@ -5,7 +5,6 @@ import { Draggable, Droppable } from '@hello-pangea/dnd';
 import { MoreHorizontal, Trash2, Pencil, Check, X } from 'lucide-react';
 import { CardItem } from '@/features/card/ui/card-item';
 import { AddCardForm } from '@/features/card/ui/add-card-form';
-import { ScrollArea } from '@/shared/ui/scroll-area';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -151,26 +150,24 @@ export function ColumnCard({
           {/* Cards */}
           <Droppable droppableId={column.id} type="CARD">
             {(dropProvided, dropSnapshot) => (
-              <ScrollArea className="flex-1 px-2">
-                <div
-                  ref={dropProvided.innerRef}
-                  {...dropProvided.droppableProps}
-                  className={`space-y-2 py-1 min-h-[8px] rounded-lg transition-colors ${
-                    dropSnapshot.isDraggingOver ? 'bg-primary/5' : ''
-                  }`}
-                >
-                  {column.cards.map((card, cardIndex) => (
-                    <CardItem
-                      key={card.id}
-                      card={card}
-                      index={cardIndex}
-                      onClick={() => onCardClick(card.id)}
-                      onDeleted={onCardDeleted}
-                    />
-                  ))}
-                  {dropProvided.placeholder}
-                </div>
-              </ScrollArea>
+              <div
+                ref={dropProvided.innerRef}
+                {...dropProvided.droppableProps}
+                className={`flex-1 overflow-y-auto px-2 space-y-2 py-1 min-h-[8px] rounded-lg transition-colors ${
+                  dropSnapshot.isDraggingOver ? 'bg-primary/5' : ''
+                }`}
+              >
+                {column.cards.map((card, cardIndex) => (
+                  <CardItem
+                    key={card.id}
+                    card={card}
+                    index={cardIndex}
+                    onClick={() => onCardClick(card.id)}
+                    onDeleted={onCardDeleted}
+                  />
+                ))}
+                {dropProvided.placeholder}
+              </div>
             )}
           </Droppable>
 
