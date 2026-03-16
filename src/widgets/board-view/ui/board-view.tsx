@@ -6,7 +6,8 @@ import {
   Droppable,
   type DropResult,
 } from '@hello-pangea/dnd';
-import { Plus, Filter, RotateCcw, X } from 'lucide-react';
+import { Plus, Filter, RotateCcw, X, Search } from 'lucide-react';
+import { Input } from '@/shared/ui/input';
 import { ColumnCard } from '@/features/column/ui/column-card';
 import { AddColumnForm } from '@/features/column/ui/add-column-form';
 import { CardDetailModal } from '@/features/card/ui/card-detail-modal';
@@ -26,14 +27,14 @@ interface Props {
 interface Filters {
   assigneeId: string | null;
   labelId: string | null;
-  overdue: boolean;
+  search: string;
 }
 
 export function BoardView({ initialBoard }: Props) {
   const [board, setBoard] = useState<BoardWithColumns>(initialBoard);
   const [addingColumn, setAddingColumn] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
-  const [filters, setFilters] = useState<Filters>({ assigneeId: null, labelId: null, overdue: false });
+  const [filters, setFilters] = useState<Filters>({ assigneeId: null, labelId: null, search: '' });
   const [showFilters, setShowFilters] = useState(false);
   // Undo stack — stores previous board states
   const undoStack = useRef<BoardWithColumns[]>([]);
@@ -71,21 +72,21 @@ export function BoardView({ initialBoard }: Props) {
     ).values()
   );
 
-  const hasActiveFilters = filters.assigneeId !== null || filters.labelId !== null || filters.overdue;
+  const hasActiveFilters = filters.assigneeId !== null || filters.labelId !== null || filters.search.trim() !== '';
 
   function filterCards(column: ColumnWithCards): ColumnWithCards {
     if (!hasActiveFilters) return column;
+    const query = filters.search.trim().toLowerCase();
     return {
       ...column,
       cards: column.cards.filter((card) => {
         const c = card as unknown as {
           card_assignees?: Array<{ user_id: string }>;
           card_labels?: Array<{ label_id: string }>;
-          due_date?: string | null;
         };
+        if (query && !card.title.toLowerCase().includes(query)) return false;
         if (filters.assigneeId && !c.card_assignees?.some((a) => a.user_id === filters.assigneeId)) return false;
         if (filters.labelId && !c.card_labels?.some((l) => l.label_id === filters.labelId)) return false;
-        if (filters.overdue && (!c.due_date || new Date(c.due_date) >= new Date())) return false;
         return true;
       }),
     };
@@ -197,8 +198,27 @@ export function BoardView({ initialBoard }: Props) {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Active filter badges */}
-          {hasActiveFilters && (
+          {/* Search input — always visible */}
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            <Input
+              value={filters.search}
+              onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+              placeholder="Search cards…"
+              className="h-7 pl-7 pr-6 text-xs w-40 focus:w-56 transition-all"
+            />
+            {filters.search && (
+              <button
+                onClick={() => setFilters((f) => ({ ...f, search: '' }))}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+
+          {/* Active filter badges (assignee / label only) */}
+          {(filters.assigneeId || filters.labelId) && (
             <div className="flex items-center gap-1 flex-wrap">
               {filters.assigneeId && (
                 <Badge variant="secondary" className="gap-1 text-xs pr-1">
@@ -216,15 +236,7 @@ export function BoardView({ initialBoard }: Props) {
                   </button>
                 </Badge>
               )}
-              {filters.overdue && (
-                <Badge variant="destructive" className="gap-1 text-xs pr-1">
-                  Overdue
-                  <button onClick={() => setFilters((f) => ({ ...f, overdue: false }))} className="ml-0.5">
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
-              <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs text-muted-foreground" onClick={() => setFilters({ assigneeId: null, labelId: null, overdue: false })}>
+              <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs text-muted-foreground" onClick={() => setFilters({ assigneeId: null, labelId: null, search: '' })}>
                 Clear all
               </Button>
             </div>
@@ -285,18 +297,7 @@ export function BoardView({ initialBoard }: Props) {
             </div>
           )}
 
-          {/* Due date filter */}
-          <div className="space-y-1">
-            <span className="font-medium text-muted-foreground uppercase tracking-wide">Due Date</span>
-            <div className="flex gap-1">
-              <button
-                onClick={() => setFilters((f) => ({ ...f, overdue: !f.overdue }))}
-                className={`px-2 py-0.5 rounded-full border text-xs transition-colors ${filters.overdue ? 'bg-destructive text-destructive-foreground border-destructive' : 'border-border hover:border-destructive'}`}
-              >
-                Overdue
-              </button>
-            </div>
-          </div>
+
         </div>
       )}
 
@@ -324,7 +325,7 @@ export function BoardView({ initialBoard }: Props) {
                 ))}
                 {provided.placeholder}
 
-                {!hasActiveFilters && (
+                {!filters.assigneeId && !filters.labelId && !filters.search && (
                   addingColumn ? (
                     <AddColumnForm
                       boardId={board.id}
@@ -352,7 +353,7 @@ export function BoardView({ initialBoard }: Props) {
       {selectedCardId && (
         <CardDetailModal
           cardId={selectedCardId}
-          boardMembers={[]}
+          boardId={board.id}
           onClose={() => setSelectedCardId(null)}
           onCardDeleted={handleCardDeleted}
         />
