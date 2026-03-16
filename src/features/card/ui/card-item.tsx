@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { createPortal } from 'react-dom';
 import { Draggable } from '@hello-pangea/dnd';
 import { Calendar, User, Tag, Trash2 } from 'lucide-react';
 import { cn, formatDate } from '@/shared/lib/utils';
@@ -40,7 +41,8 @@ export function CardItem({ card, index, onClick, onDeleted }: Props) {
 
   return (
     <Draggable draggableId={card.id} index={index}>
-      {(provided, snapshot) => (
+      {(provided, snapshot) => {
+        const cardEl = (
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
@@ -137,7 +139,13 @@ export function CardItem({ card, index, onClick, onDeleted }: Props) {
             )}
           </div>
         </div>
-      )}
+        );
+
+        if (snapshot.isDragging) {
+          return createPortal(cardEl, document.body);
+        }
+        return cardEl;
+      }}
     </Draggable>
   );
 }
