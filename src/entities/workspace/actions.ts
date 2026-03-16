@@ -84,7 +84,7 @@ export async function acceptInviteAction(token: string) {
 
   if (error) return { error: error.message };
 
-  redirect(`/workspaces/${invite.workspace_id}`);
+  redirect('/workspaces');
 }
 
 export async function createInviteAction(workspaceId: string) {

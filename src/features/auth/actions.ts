@@ -15,7 +15,8 @@ export async function loginAction(formData: FormData) {
     return { error: error.message };
   }
 
-  redirect('/workspaces');
+  const next = formData.get('next') as string | null;
+  redirect(next ?? '/workspaces');
 }
 
 export async function registerAction(formData: FormData) {

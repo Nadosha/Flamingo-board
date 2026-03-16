@@ -7,7 +7,7 @@ import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { loginAction, googleLoginAction } from '../actions';
 
-export function LoginForm() {
+export function LoginForm({ next }: { next?: string }) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -15,6 +15,7 @@ export function LoginForm() {
     e.preventDefault();
     setError(null);
     const formData = new FormData(e.currentTarget);
+    if (next) formData.set('next', next);
     startTransition(async () => {
       const result = await loginAction(formData);
       if (result?.error) setError(result.error);
