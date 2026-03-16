@@ -1,6 +1,6 @@
 # 🦩 Flamingo Board
 
-A real-time collaborative Kanban board built with Next.js 15, Supabase, and TypeScript. Create workspaces, invite teammates, manage boards with drag-and-drop columns and cards, and see who's online — all in real time.
+A real-time collaborative Kanban board built with Next.js 16, Supabase, and TypeScript. Create workspaces, invite teammates, manage boards with drag-and-drop columns and cards, and see who's online — all in real time.
 
 ## Features
 
@@ -14,7 +14,7 @@ A real-time collaborative Kanban board built with Next.js 15, Supabase, and Type
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 15 (App Router, Server Actions) |
+| Framework | Next.js 16.1.6 (App Router, Server Actions) |
 | Database | Supabase (PostgreSQL + PostgREST + Realtime) |
 | Auth | Supabase Auth (GoTrue) |
 | Styling | Tailwind CSS + shadcn/ui |
