@@ -74,9 +74,7 @@ async function WorkspaceSection({
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {(role === 'owner' || role === 'admin') && (
-            <InviteButton workspaceId={workspace.id} />
-          )}
+          <InviteButton workspaceId={workspace.id} />
           <Link
             href={`/workspaces/${workspace.id}/settings`}
             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
