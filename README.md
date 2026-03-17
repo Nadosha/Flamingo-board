@@ -23,7 +23,7 @@ A real-time collaborative Kanban board built with Next.js 16, Supabase, and Type
 | 5 | Boards (belong to workspace) | ✅ Done |
 | 6 | Columns (ordered within board) | ✅ Done |
 | 7 | Cards (ordered within column, with assignees, labels, due dates) | ✅ Done |
-| 8 | Activity log per card | ⚠️ Schema exists, UI not implemented |
+| 8 | Activity log per card | ✅ Done |
 | **Features** | | |
 | 9 | Create/edit/delete boards and columns | ✅ Done |
 | 10 | Drag-and-drop cards between columns | ✅ Done |
