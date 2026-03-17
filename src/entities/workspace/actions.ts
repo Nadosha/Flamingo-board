@@ -33,7 +33,7 @@ export async function createWorkspaceAction(formData: FormData) {
   const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 7)}`;
 
   const db = createAdminClient();
-  const { data, error } = await db
+  const { error } = await db
     .from('workspaces')
     .insert({ name, slug, owner_id: user.id })
     .select()

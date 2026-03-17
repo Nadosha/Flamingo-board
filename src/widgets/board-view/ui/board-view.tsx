@@ -39,6 +39,7 @@ export function BoardView({ initialBoard }: Props) {
   const [filters, setFilters] = useState<Filters>({ assigneeId: null, labelId: null, search: '', overdue: false });
   const [showFilters, setShowFilters] = useState(false);
   const [workspaceMembers, setWorkspaceMembers] = useState<Array<{ user_id: string; full_name: string }>>([]);
+  const [canUndo, setCanUndo] = useState(false);
   // Undo stack — stores previous board states
   const undoStack = useRef<BoardWithColumns[]>([]);
   // Counter of in-flight drag operations — realtime updates are suppressed while > 0
@@ -77,8 +78,6 @@ export function BoardView({ initialBoard }: Props) {
     ).values()
   );
 
-  const hasActiveFilters = filters.assigneeId !== null || filters.labelId !== null || filters.search.trim() !== '' || filters.overdue;
-
   const handleDragEnd = useCallback(
     (result: DropResult) => {
       const { destination, source, type } = result;
@@ -88,6 +87,7 @@ export function BoardView({ initialBoard }: Props) {
       // Snapshot for revert on server error
       const savedBoard = board;
       undoStack.current = [...undoStack.current.slice(-9), board];
+      setCanUndo(true);
 
       if (type === 'COLUMN') {
         const cols = Array.from(board.columns);
@@ -104,6 +104,8 @@ export function BoardView({ initialBoard }: Props) {
             // Conflict resolution: revert optimistic update on failure
             setBoard(savedBoard);
             undoStack.current = undoStack.current.slice(0, -1);
+            setCanUndo(undoStack.current.length > 0);
+            setCanUndo(undoStack.current.length > 0);
           })
           .finally(() => {
             pendingOpsRef.current--;
@@ -162,6 +164,7 @@ export function BoardView({ initialBoard }: Props) {
     if (undoStack.current.length === 0) return;
     const prev = undoStack.current[undoStack.current.length - 1];
     undoStack.current = undoStack.current.slice(0, -1);
+    setCanUndo(undoStack.current.length > 0);
     setBoard(prev);
   }, []);
 
@@ -200,7 +203,7 @@ export function BoardView({ initialBoard }: Props) {
             {board.columns.length} column{board.columns.length !== 1 ? 's' : ''}
           </span>
           {/* Undo */}
-          {undoStack.current.length > 0 && (
+          {canUndo && (
             <Button size="sm" variant="ghost" className="h-7 px-2 text-xs gap-1" onClick={handleUndo}>
               <RotateCcw className="h-3.5 w-3.5" />
               Undo
@@ -352,7 +355,6 @@ export function BoardView({ initialBoard }: Props) {
                     key={column.id}
                     column={column}
                     index={index}
-                    boardId={board.id}
                     onCardAdded={handleCardAdded}
                     onCardClick={setSelectedCardId}
                     onColumnDeleted={handleColumnDeleted}

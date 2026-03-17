@@ -19,7 +19,6 @@ import type { ColumnWithCards, CardWithRelations } from '@/shared/types';
 interface Props {
   column: ColumnWithCards;
   index: number;
-  boardId: string;
   onCardAdded: (columnId: string, card: CardWithRelations) => void;
   onCardClick: (cardId: string) => void;
   onColumnDeleted: (columnId: string) => void;
@@ -29,7 +28,6 @@ interface Props {
 export function ColumnCard({
   column,
   index,
-  boardId,
   onCardAdded,
   onCardClick,
   onColumnDeleted,

@@ -3,10 +3,9 @@
 import { useState, useTransition } from 'react';
 import { createPortal } from 'react-dom';
 import { Draggable } from '@hello-pangea/dnd';
-import { Calendar, User, Tag, Trash2 } from 'lucide-react';
+import { Calendar, Trash2 } from 'lucide-react';
 import { cn, formatDate } from '@/shared/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
-import { Badge } from '@/shared/ui/badge';
 import {
   Tooltip,
   TooltipContent,

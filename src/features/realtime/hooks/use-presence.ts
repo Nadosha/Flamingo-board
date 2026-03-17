@@ -9,7 +9,6 @@ export function usePresence(boardId: string) {
 
   useEffect(() => {
     const supabase = createClient();
-    let currentUserId: string | null = null;
 
     async function setup() {
       const {
@@ -17,7 +16,6 @@ export function usePresence(boardId: string) {
       } = await supabase.auth.getUser();
 
       if (!user) return;
-      currentUserId = user.id;
 
       // Fetch profile for display name
       const { data: profile } = await supabase

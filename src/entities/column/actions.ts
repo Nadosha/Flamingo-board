@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient, createAdminClient } from '@/shared/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 export async function createColumnAction(boardId: string, name: string, position: number) {

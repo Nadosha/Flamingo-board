@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default async function BoardPage({ params }: Props) {
-  const { workspaceId, boardId } = await params;
+  const { boardId } = await params;
   const board = await getBoardWithColumnsAction(boardId);
 
   return (
