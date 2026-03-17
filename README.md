@@ -12,45 +12,45 @@ A real-time collaborative Kanban board built with Next.js 16, Supabase, and Type
 
 ## Requirements Coverage
 
-| # | Requirement | Status |
-|---|---|---|
-| **Auth** | | |
-| 1 | Email/password + Google OAuth | ✅ Done |
-| 2 | User profiles with avatars | ✅ Done |
-| 3 | Invite-only workspaces via magic links | ✅ Done |
-| **Database Schema** | | |
-| 4 | Workspaces | ✅ Done |
-| 5 | Boards (belong to workspace) | ✅ Done |
-| 6 | Columns (ordered within board) | ✅ Done |
-| 7 | Cards (ordered within column, with assignees, labels, due dates) | ✅ Done |
-| 8 | Activity log per card | ✅ Done |
-| **Features** | | |
-| 9 | Create/edit/delete boards and columns | ✅ Done |
-| 10 | Drag-and-drop cards between columns | ✅ Done |
-| 11 | Real-time sync across multiple browser tabs/users | ✅ Done |
-| 12 | Presence indicators showing who's viewing the board | ✅ Done |
-| 13 | Card detail modal with description and activity history | ✅ Done (description + comments) |
-| **Technical Requirements** | | |
-| 14 | Supabase Realtime subscriptions for live updates | ✅ Done |
-| 15 | Optimistic drag-and-drop with conflict resolution | ✅ Done |
-| 16 | @hello-pangea/dnd for drag interactions | ✅ Done |
-| 17 | TypeScript types generated from the Supabase schema | ✅ Done |
-| 18 | Row-Level Security for workspace isolation | ✅ Done |
-| **Bonus** | | |
-| 19 | Markdown editor in card detail | ✅ Done |
-| 20 | Filter cards by assignee/label/due date | ✅ Done |
-| 21 | Undo last action (local state) | ✅ Done |
+| #                          | Requirement                                                      | Status                           |
+| -------------------------- | ---------------------------------------------------------------- | -------------------------------- |
+| **Auth**                   |                                                                  |                                  |
+| 1                          | Email/password + Google OAuth                                    | ✅ Done                          |
+| 2                          | User profiles with avatars                                       | ✅ Done                          |
+| 3                          | Invite-only workspaces via magic links                           | ✅ Done                          |
+| **Database Schema**        |                                                                  |                                  |
+| 4                          | Workspaces                                                       | ✅ Done                          |
+| 5                          | Boards (belong to workspace)                                     | ✅ Done                          |
+| 6                          | Columns (ordered within board)                                   | ✅ Done                          |
+| 7                          | Cards (ordered within column, with assignees, labels, due dates) | ✅ Done                          |
+| 8                          | Activity log per card                                            | ✅ Done                          |
+| **Features**               |                                                                  |                                  |
+| 9                          | Create/edit/delete boards and columns                            | ✅ Done                          |
+| 10                         | Drag-and-drop cards between columns                              | ✅ Done                          |
+| 11                         | Real-time sync across multiple browser tabs/users                | ✅ Done                          |
+| 12                         | Presence indicators showing who's viewing the board              | ✅ Done                          |
+| 13                         | Card detail modal with description and activity history          | ✅ Done (description + comments) |
+| **Technical Requirements** |                                                                  |                                  |
+| 14                         | Supabase Realtime subscriptions for live updates                 | ✅ Done                          |
+| 15                         | Optimistic drag-and-drop with conflict resolution                | ✅ Done                          |
+| 16                         | @hello-pangea/dnd for drag interactions                          | ✅ Done                          |
+| 17                         | TypeScript types generated from the Supabase schema              | ✅ Done                          |
+| 18                         | Row-Level Security for workspace isolation                       | ✅ Done                          |
+| **Bonus**                  |                                                                  |                                  |
+| 19                         | Markdown editor in card detail                                   | ✅ Done                          |
+| 20                         | Filter cards by assignee/label/due date                          | ✅ Done                          |
+| 21                         | Undo last action (local state)                                   | ✅ Done                          |
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16.1.6 (App Router, Server Actions) |
-| Database | Supabase (PostgreSQL + PostgREST + Realtime) |
-| Auth | Supabase Auth (GoTrue) |
-| Styling | Tailwind CSS + shadcn/ui |
-| Language | TypeScript |
-| Deployment | Docker (standalone Next.js output) |
+| Layer      | Technology                                   |
+| ---------- | -------------------------------------------- |
+| Framework  | Next.js 16.1.6 (App Router, Server Actions)  |
+| Database   | Supabase (PostgreSQL + PostgREST + Realtime) |
+| Auth       | Supabase Auth (GoTrue)                       |
+| Styling    | Tailwind CSS + shadcn/ui                     |
+| Language   | TypeScript                                   |
+| Deployment | Docker (standalone Next.js output)           |
 
 ---
 
@@ -125,13 +125,13 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | yes | Supabase API URL (public, used in browser and server) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes | Supabase anon/publishable key |
-| `SUPABASE_SERVICE_ROLE_KEY` | yes | Supabase service role key — server-side only, never exposed to browser |
-| `NEXT_PUBLIC_APP_URL` | yes | Base URL for generating invite links |
-| `SUPABASE_INTERNAL_URL` | auto | Set in Docker to reach Supabase from inside the container (`http://host.docker.internal:54321`) |
+| Variable                        | Required | Description                                                                                     |
+| ------------------------------- | -------- | ----------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | yes      | Supabase API URL (public, used in browser and server)                                           |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes      | Supabase anon/publishable key                                                                   |
+| `SUPABASE_SERVICE_ROLE_KEY`     | yes      | Supabase service role key — server-side only, never exposed to browser                          |
+| `NEXT_PUBLIC_APP_URL`           | yes      | Base URL for generating invite links                                                            |
+| `SUPABASE_INTERNAL_URL`         | auto     | Set in Docker to reach Supabase from inside the container (`http://host.docker.internal:54321`) |
 
 ---
 
@@ -170,23 +170,23 @@ vitest.config.ts                # Vitest configuration (jsdom env + path aliases
 
 ### What's covered
 
-| Test file | Cases | What's tested |
-|---|---|---|
-| `utils.test.ts` — `getInitials` | 6 | null/undefined/empty input, single word, full name, 3-word truncation, uppercasing |
-| `utils.test.ts` — `formatRelativeTime` | 5 | "just now", minutes, hours, days, formatted date; uses `vi.useFakeTimers()` |
-| `filter-cards.test.ts` | 5 | No-op when no filters, search (case-insensitive), assignee filter, overdue filter, combined AND logic |
-| `actions.test.ts` | 3 | Board-not-found error, Supabase insert failure, successful label creation; Supabase mocked with `vi.mock()` |
-| `card-item.test.tsx` | 4 | Title renders, label color swatches, overdue CSS class, `onClick` fires; DnD mocked as passthrough |
+| Test file                              | Cases | What's tested                                                                                               |
+| -------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------- |
+| `utils.test.ts` — `getInitials`        | 6     | null/undefined/empty input, single word, full name, 3-word truncation, uppercasing                          |
+| `utils.test.ts` — `formatRelativeTime` | 5     | "just now", minutes, hours, days, formatted date; uses `vi.useFakeTimers()`                                 |
+| `filter-cards.test.ts`                 | 5     | No-op when no filters, search (case-insensitive), assignee filter, overdue filter, combined AND logic       |
+| `actions.test.ts`                      | 3     | Board-not-found error, Supabase insert failure, successful label creation; Supabase mocked with `vi.mock()` |
+| `card-item.test.tsx`                   | 4     | Title renders, label color swatches, overdue CSS class, `onClick` fires; DnD mocked as passthrough          |
 
 ### Stack
 
-| Tool | Role |
-|---|---|
-| [Vitest](https://vitest.dev) | Test runner + assertion library |
-| [@testing-library/react](https://testing-library.com/react) | Component rendering & queries |
-| [@testing-library/user-event](https://testing-library.com/user-event) | Simulates real user interactions |
+| Tool                                                                     | Role                                     |
+| ------------------------------------------------------------------------ | ---------------------------------------- |
+| [Vitest](https://vitest.dev)                                             | Test runner + assertion library          |
+| [@testing-library/react](https://testing-library.com/react)              | Component rendering & queries            |
+| [@testing-library/user-event](https://testing-library.com/user-event)    | Simulates real user interactions         |
 | [@testing-library/jest-dom](https://github.com/testing-library/jest-dom) | DOM matchers (`toBeInTheDocument`, etc.) |
-| jsdom | Simulated browser DOM for Node.js |
+| jsdom                                                                    | Simulated browser DOM for Node.js        |
 
 ---
 
@@ -280,21 +280,27 @@ src/
 ---
 
 ### Feature-Sliced Design (FSD)
+
 The codebase follows a simplified FSD structure: `shared → entities → features → widgets → app`. This keeps concerns separated — data access in `entities`, user interactions in `features`, compositions in `widgets`. Makes things easy to locate and avoids circular dependencies.
 
 ### Server Actions for all mutations
+
 All writes go through Next.js Server Actions rather than API routes. This avoids building a separate REST/GraphQL layer, keeps the server-client boundary explicit, and provides automatic CSRF protection. The tradeoff is that optimistic UI requires more manual wiring compared to a client-side mutation library like React Query.
 
 ### Service role key for server-side DB operations
+
 Local Supabase CLI v2 signs user JWTs with ES256 (EC key), but PostgREST 14 silently fails ES256 verification and falls back to the `anon` role — causing every RLS-protected write to fail. The fix: server actions use `createAdminClient()` with the `sb_secret_*` service role key. Kong's API gateway intercepts this and injects a valid HS256 service_role JWT that PostgREST accepts. Auth is still verified via the regular `createClient()` before any DB write, so user identity is always confirmed first.
 
 ### Row-Level Security (RLS)
+
 All tables have RLS enabled. Helper functions `is_workspace_member()` and `is_workspace_admin()` are `SECURITY DEFINER` to prevent infinite recursion when policies on `workspace_members` query themselves. The `card_assignees.user_id` FK references `public.profiles` (not `auth.users`) so PostgREST can resolve the JOIN within the public schema.
 
 ### Realtime via Supabase channels
+
 Board updates subscribe to `postgres_changes` filtered by `board_id`. Presence (online indicators) uses Supabase Presence channels. Both are encapsulated in custom hooks (`use-realtime-board`, `use-presence`) mounted at the board view level.
 
 ### Optimistic drag-and-drop with conflict resolution
+
 `onDragEnd` is synchronous — the board state is updated **immediately** on drop without waiting for the server. The server call fires in the background via `.then().catch()`.
 
 Conflict resolution is handled with two mechanisms:
@@ -308,15 +314,25 @@ Conflict resolution is handled with two mechanisms:
 ## What I'd Improve With More Time
 
 **Product**
-- File attachments on cards via Supabase Storage
-- Board backgrounds — custom image or color
-- Activity log per card
+
+- AI tasks: "Create backlog for/from...", "Enhence task description"
+- Import from Jira
+- Documents - Knowledge base
+- Gantt board
+- List
+- Automatization
+- Planner
+- On Card(ticket) "Chat" with coloborators.
+- File attachments on cards
+- Reminders
+- Board backgrounds — custom image or color & other costomization for appearence (Themes)
 - Notifications for @mentions and assignments
+  ... And this list could be endless...
 
 **Technical**
+
 - Fix the ES256/PostgREST root cause by configuring Supabase to sign with HS256 (`jwt_secret` in `config.toml`) instead of the service role key workaround
 - E2E tests with Playwright covering auth, workspace creation, and card drag-and-drop
 - Proper error boundaries with user-facing messages instead of exceptions bubbling to the Next.js error page
 - Pagination or virtual scrolling for large boards
 - CI/CD pipeline (GitHub Actions) with lint, type-check, and tests on every PR
-- Move to a managed Supabase project for production with proper secrets management
