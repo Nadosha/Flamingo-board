@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
-import { loginAction, googleLoginAction } from '../actions';
+import { loginAction } from '../actions';
+import { createClient } from '@/shared/lib/supabase/client';
 
 export function LoginForm({ next }: { next?: string }) {
   const [error, setError] = useState<string | null>(null);
@@ -23,8 +24,10 @@ export function LoginForm({ next }: { next?: string }) {
   }
 
   function handleGoogle() {
-    startTransition(async () => {
-      await googleLoginAction();
+    const supabase = createClient();
+    supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
   }
 

@@ -3,6 +3,8 @@
 -- Run this in the Supabase SQL Editor
 -- ============================================================
 
+create extension if not exists pgcrypto;
+
 -- Profiles (extends auth.users)
 create table if not exists profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -68,7 +70,7 @@ create table if not exists workspace_invites (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid references workspaces(id) on delete cascade not null,
   invited_by uuid references auth.users(id) on delete cascade not null,
-  token text unique not null default encode(gen_random_bytes(32), 'hex'),
+  token text unique not null default encode(extensions.gen_random_bytes(32), 'hex'),
   email text,
   expires_at timestamptz default (now() + interval '7 days') not null,
   created_at timestamptz default now() not null
