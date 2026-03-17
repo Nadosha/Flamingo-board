@@ -181,7 +181,6 @@ Board updates subscribe to `postgres_changes` filtered by `board_id`. Presence (
 ## What I'd Improve With More Time
 
 **Product**
-- Optimistic UI for drag-and-drop — currently waits for a server round-trip, causing a visible flicker
 - File attachments on cards via Supabase Storage
 - Board backgrounds — custom image or color
 - Activity log per card

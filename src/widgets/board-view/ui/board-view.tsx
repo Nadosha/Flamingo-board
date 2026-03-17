@@ -41,9 +41,13 @@ export function BoardView({ initialBoard }: Props) {
   const [workspaceMembers, setWorkspaceMembers] = useState<Array<{ user_id: string; full_name: string }>>([]);
   // Undo stack — stores previous board states
   const undoStack = useRef<BoardWithColumns[]>([]);
+  // Counter of in-flight drag operations — realtime updates are suppressed while > 0
+  const pendingOpsRef = useRef(0);
 
-  // Real-time sync
-  useRealtimeBoard(board.id, (updated) => setBoard(updated));
+  // Real-time sync — skip if a local drag is still in flight to avoid overwriting optimistic state
+  useRealtimeBoard(board.id, (updated) => {
+    if (pendingOpsRef.current === 0) setBoard(updated);
+  });
 
   // Presence
   const { presentUsers } = usePresence(board.id);
@@ -76,12 +80,13 @@ export function BoardView({ initialBoard }: Props) {
   const hasActiveFilters = filters.assigneeId !== null || filters.labelId !== null || filters.search.trim() !== '' || filters.overdue;
 
   const handleDragEnd = useCallback(
-    async (result: DropResult) => {
+    (result: DropResult) => {
       const { destination, source, type } = result;
       if (!destination) return;
       if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
-      // Save current state to undo stack before mutating
+      // Snapshot for revert on server error
+      const savedBoard = board;
       undoStack.current = [...undoStack.current.slice(-9), board];
 
       if (type === 'COLUMN') {
@@ -89,8 +94,20 @@ export function BoardView({ initialBoard }: Props) {
         const [moved] = cols.splice(source.index, 1);
         cols.splice(destination.index, 0, moved);
         const updated = cols.map((c, i) => ({ ...c, position: i }));
+
+        // Optimistic update — instant, no server round-trip
         setBoard((prev) => ({ ...prev, columns: updated }));
-        await reorderColumnsAction(updated.map(({ id, position }) => ({ id, position })));
+
+        pendingOpsRef.current++;
+        reorderColumnsAction(updated.map(({ id, position }) => ({ id, position })))
+          .catch(() => {
+            // Conflict resolution: revert optimistic update on failure
+            setBoard(savedBoard);
+            undoStack.current = undoStack.current.slice(0, -1);
+          })
+          .finally(() => {
+            pendingOpsRef.current--;
+          });
         return;
       }
 
@@ -117,6 +134,7 @@ export function BoardView({ initialBoard }: Props) {
         });
       }
 
+      // Optimistic update — instant, no server round-trip
       setBoard((prev) => ({ ...prev, columns: newColumns }));
 
       const affectedCards: Array<{ id: string; column_id: string; position: number }> = [];
@@ -125,7 +143,17 @@ export function BoardView({ initialBoard }: Props) {
           col.cards.forEach((c) => affectedCards.push({ id: c.id, column_id: col.id, position: c.position }));
         }
       });
-      await reorderCardsAction(affectedCards);
+
+      pendingOpsRef.current++;
+      reorderCardsAction(affectedCards)
+        .catch(() => {
+          // Conflict resolution: revert optimistic update on failure
+          setBoard(savedBoard);
+          undoStack.current = undoStack.current.slice(0, -1);
+        })
+        .finally(() => {
+          pendingOpsRef.current--;
+        });
     },
     [board],
   );
