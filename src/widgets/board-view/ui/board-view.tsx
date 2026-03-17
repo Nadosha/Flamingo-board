@@ -16,6 +16,7 @@ import { useRealtimeBoard } from '@/features/realtime/hooks/use-realtime-board';
 import { usePresence } from '@/features/realtime/hooks/use-presence';
 import { reorderCardsAction, getBoardMembersAction } from '@/entities/card/actions';
 import { reorderColumnsAction } from '@/entities/column/actions';
+import { filterCards } from '@/features/card/lib/filter-cards';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import type { BoardWithColumns, ColumnWithCards, CardWithRelations } from '@/shared/types';
@@ -73,31 +74,6 @@ export function BoardView({ initialBoard }: Props) {
   );
 
   const hasActiveFilters = filters.assigneeId !== null || filters.labelId !== null || filters.search.trim() !== '' || filters.overdue;
-
-  function filterCards(column: ColumnWithCards): ColumnWithCards {
-    if (!hasActiveFilters) return column;
-    const query = filters.search.trim().toLowerCase();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return {
-      ...column,
-      cards: column.cards.filter((card) => {
-        const c = card as unknown as {
-          assignees?: Array<{ user_id: string }>;
-          labels?: Array<{ label_id: string }>;
-          due_date?: string | null;
-        };
-        if (query && !card.title.toLowerCase().includes(query)) return false;
-        if (filters.assigneeId && !c.assignees?.some((a) => a.user_id === filters.assigneeId)) return false;
-        if (filters.labelId && !c.labels?.some((l) => l.label_id === filters.labelId)) return false;
-        if (filters.overdue) {
-          if (!c.due_date) return false;
-          if (new Date(c.due_date) >= today) return false;
-        }
-        return true;
-      }),
-    };
-  }
 
   const handleDragEnd = useCallback(
     async (result: DropResult) => {
@@ -185,7 +161,7 @@ export function BoardView({ initialBoard }: Props) {
     }));
   }, []);
 
-  const filteredColumns = board.columns.map(filterCards);
+  const filteredColumns = board.columns.map((col) => filterCards(col, filters));
 
   return (
     <div className="h-full flex flex-col board-bg">

@@ -1,15 +1,14 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { ChevronLeft } from 'lucide-react';
-import type { Board } from '@/shared/types';
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
+import type { Board } from "@/shared/types";
 
 interface Props {
   board: Board;
-  workspaceId: string;
 }
 
-export function BoardHeader({ board, workspaceId }: Props) {
+export function BoardHeader({ board }: Props) {
   return (
     <header
       className="flex items-center gap-3 px-4 py-3 border-b bg-background/80 backdrop-blur-sm z-10"
