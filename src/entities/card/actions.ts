@@ -255,6 +255,40 @@ export async function getBoardLabelsAction(boardId: string) {
   return (data ?? []) as Array<{ id: string; name: string; color: string }>;
 }
 
+export async function createLabelAction(boardId: string, name: string, color: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const db = createAdminClient();
+  const { data: board } = await db
+    .from('boards')
+    .select('workspace_id')
+    .eq('id', boardId)
+    .single();
+
+  if (!board) return { error: 'Board not found' };
+
+  const { data, error } = await db
+    .from('labels')
+    .insert({ workspace_id: board.workspace_id, name: name.trim(), color })
+    .select('id, name, color')
+    .single();
+
+  if (error) return { error: error.message };
+  return { label: data as { id: string; name: string; color: string } };
+}
+
+export async function deleteLabelAction(labelId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const db = createAdminClient();
+  await db.from('labels').delete().eq('id', labelId);
+  return { success: true };
+}
+
 export async function addCommentAction(cardId: string, content: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

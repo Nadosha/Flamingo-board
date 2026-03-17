@@ -29,6 +29,7 @@ import {
   removeCardLabelAction,
   getBoardMembersAction,
   getBoardLabelsAction,
+  createLabelAction,
 } from '@/entities/card/actions';
 import { formatRelativeTime, getInitials } from '@/shared/lib/utils';
 
@@ -57,6 +58,9 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted }: Pro
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [comment, setComment] = useState('');
+  const [newLabelName, setNewLabelName] = useState('');
+  const [newLabelColor, setNewLabelColor] = useState('#0079bf');
+  const [creatingLabel, setCreatingLabel] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -124,6 +128,20 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted }: Pro
         const existing = (prev.card_labels as CardLabelEntry[]) ?? [];
         return { ...prev, card_labels: [...existing, { label_id: label.id, label: { name: label.name, color: label.color } }] } as unknown as CardDetail;
       });
+    });
+  }
+
+  function handleCreateLabel() {
+    if (!newLabelName.trim()) return;
+    startTransition(async () => {
+      const result = await createLabelAction(boardId, newLabelName.trim(), newLabelColor);
+      if ('label' in result && result.label) {
+        const created = result.label;
+        setBoardLabels((prev) => [...prev, created]);
+        handleAddLabel(created);
+        setNewLabelName('');
+        setCreatingLabel(false);
+      }
     });
   }
 
@@ -346,29 +364,69 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted }: Pro
                       </div>
                     ))}
 
-                    {boardLabels.filter((l) => !(card.card_labels as CardLabelEntry[]).some((cl) => cl.label_id === l.id)).length > 0 && (
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <button className="w-full text-left text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-secondary transition-colors">
-                            <Plus className="h-3 w-3" /> Add label
+                    <Popover onOpenChange={(open) => { if (!open) { setCreatingLabel(false); setNewLabelName(''); } }}>
+                      <PopoverTrigger asChild>
+                        <button className="w-full text-left text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-secondary transition-colors">
+                          <Plus className="h-3 w-3" /> Add label
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-52 p-2" align="start">
+                        {boardLabels.filter((l) => !(card.card_labels as CardLabelEntry[]).some((cl) => cl.label_id === l.id)).map((label) => (
+                          <button
+                            key={label.id}
+                            onClick={() => handleAddLabel(label)}
+                            className="w-full flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent transition-colors"
+                          >
+                            <span className="h-3 w-3 rounded-full flex-shrink-0" style={{ backgroundColor: label.color }} />
+                            {label.name}
                           </button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-44 p-1" align="start">
-                          {boardLabels
-                            .filter((l) => !(card.card_labels as CardLabelEntry[]).some((cl) => cl.label_id === l.id))
-                            .map((label) => (
+                        ))}
+                        {!creatingLabel ? (
+                          <button
+                            onClick={() => setCreatingLabel(true)}
+                            className="w-full flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors mt-1 border-t border-border/40 pt-2"
+                          >
+                            <Plus className="h-3 w-3" /> Create new label
+                          </button>
+                        ) : (
+                          <div className="mt-2 border-t border-border/40 pt-2 space-y-2">
+                            <input
+                              autoFocus
+                              value={newLabelName}
+                              onChange={(e) => setNewLabelName(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleCreateLabel(); if (e.key === 'Escape') setCreatingLabel(false); }}
+                              placeholder="Label name…"
+                              className="w-full text-xs px-2 py-1.5 rounded-md border border-border bg-background focus:outline-none focus:ring-1 focus:ring-border/60"
+                            />
+                            <div className="flex flex-wrap gap-1.5">
+                              {['#0079bf','#61bd4f','#f2d600','#ff9f1a','#eb5a46','#c377e0','#00c2e0','#51e898','#ff78cb','#344563'].map((c) => (
+                                <button
+                                  key={c}
+                                  onClick={() => setNewLabelColor(c)}
+                                  className="h-5 w-5 rounded-full transition-transform hover:scale-110"
+                                  style={{ backgroundColor: c, outline: newLabelColor === c ? `2px solid ${c}` : 'none', outlineOffset: '2px' }}
+                                />
+                              ))}
+                            </div>
+                            <div className="flex gap-1">
                               <button
-                                key={label.id}
-                                onClick={() => handleAddLabel(label)}
-                                className="w-full flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent transition-colors"
+                                onClick={handleCreateLabel}
+                                disabled={!newLabelName.trim() || isPending}
+                                className="flex-1 text-xs py-1 rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
                               >
-                                <span className="h-3 w-3 rounded-full flex-shrink-0" style={{ backgroundColor: label.color }} />
-                                {label.name}
+                                Create
                               </button>
-                            ))}
-                        </PopoverContent>
-                      </Popover>
-                    )}
+                              <button
+                                onClick={() => { setCreatingLabel(false); setNewLabelName(''); }}
+                                className="px-2 text-xs py-1 rounded-md border border-border hover:bg-secondary transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
 
