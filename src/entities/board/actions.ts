@@ -73,8 +73,8 @@ export async function getBoardWithColumnsAction(boardId: string) {
         *,
         cards (
           *,
-          card_assignees ( user_id, profile:profiles(id, full_name, avatar_url) ),
-          card_labels ( label_id, label:labels(*) )
+          assignees:card_assignees ( user_id, profile:profiles(id, full_name, avatar_url) ),
+          labels:card_labels ( label_id, label:labels(*) )
         )
       )
     `)

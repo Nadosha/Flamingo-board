@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   DragDropContext,
   Droppable,
@@ -14,7 +14,7 @@ import { CardDetailModal } from '@/features/card/ui/card-detail-modal';
 import { PresenceBar } from '@/features/presence/ui/presence-bar';
 import { useRealtimeBoard } from '@/features/realtime/hooks/use-realtime-board';
 import { usePresence } from '@/features/realtime/hooks/use-presence';
-import { reorderCardsAction } from '@/entities/card/actions';
+import { reorderCardsAction, getBoardMembersAction } from '@/entities/card/actions';
 import { reorderColumnsAction } from '@/entities/column/actions';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
@@ -28,14 +28,16 @@ interface Filters {
   assigneeId: string | null;
   labelId: string | null;
   search: string;
+  overdue: boolean;
 }
 
 export function BoardView({ initialBoard }: Props) {
   const [board, setBoard] = useState<BoardWithColumns>(initialBoard);
   const [addingColumn, setAddingColumn] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
-  const [filters, setFilters] = useState<Filters>({ assigneeId: null, labelId: null, search: '' });
+  const [filters, setFilters] = useState<Filters>({ assigneeId: null, labelId: null, search: '', overdue: false });
   const [showFilters, setShowFilters] = useState(false);
+  const [workspaceMembers, setWorkspaceMembers] = useState<Array<{ user_id: string; full_name: string }>>([]);
   // Undo stack — stores previous board states
   const undoStack = useRef<BoardWithColumns[]>([]);
 
@@ -45,25 +47,23 @@ export function BoardView({ initialBoard }: Props) {
   // Presence
   const { presentUsers } = usePresence(board.id);
 
-  // Collect all unique assignees and labels from current board
-  const allAssignees = Array.from(
-    new Map(
-      board.columns.flatMap((c) =>
-        c.cards.flatMap((card) =>
-          ((card as unknown as { card_assignees?: Array<{ user_id: string; profile: { full_name: string | null } | null }> }).card_assignees ?? []).map((a) => [
-            a.user_id,
-            { user_id: a.user_id, full_name: a.profile?.full_name ?? 'Unknown' },
-          ])
-        )
-      )
-    ).values()
-  );
+  // Load all workspace members for filter panel
+  useEffect(() => {
+    getBoardMembersAction(board.id).then((members) => {
+      setWorkspaceMembers(
+        members.map((m) => ({
+          user_id: m.user_id,
+          full_name: m.profile?.full_name ?? 'Unknown',
+        }))
+      );
+    });
+  }, [board.id]);
 
   const allLabels = Array.from(
     new Map(
       board.columns.flatMap((c) =>
         c.cards.flatMap((card) =>
-          ((card as unknown as { card_labels?: Array<{ label_id: string; label: { name: string; color: string } }> }).card_labels ?? []).map((l) => [
+          ((card as unknown as { labels?: Array<{ label_id: string; label: { name: string; color: string } }> }).labels ?? []).map((l) => [
             l.label_id,
             { label_id: l.label_id, name: l.label.name, color: l.label.color },
           ])
@@ -72,21 +72,28 @@ export function BoardView({ initialBoard }: Props) {
     ).values()
   );
 
-  const hasActiveFilters = filters.assigneeId !== null || filters.labelId !== null || filters.search.trim() !== '';
+  const hasActiveFilters = filters.assigneeId !== null || filters.labelId !== null || filters.search.trim() !== '' || filters.overdue;
 
   function filterCards(column: ColumnWithCards): ColumnWithCards {
     if (!hasActiveFilters) return column;
     const query = filters.search.trim().toLowerCase();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     return {
       ...column,
       cards: column.cards.filter((card) => {
         const c = card as unknown as {
-          card_assignees?: Array<{ user_id: string }>;
-          card_labels?: Array<{ label_id: string }>;
+          assignees?: Array<{ user_id: string }>;
+          labels?: Array<{ label_id: string }>;
+          due_date?: string | null;
         };
         if (query && !card.title.toLowerCase().includes(query)) return false;
-        if (filters.assigneeId && !c.card_assignees?.some((a) => a.user_id === filters.assigneeId)) return false;
-        if (filters.labelId && !c.card_labels?.some((l) => l.label_id === filters.labelId)) return false;
+        if (filters.assigneeId && !c.assignees?.some((a) => a.user_id === filters.assigneeId)) return false;
+        if (filters.labelId && !c.labels?.some((l) => l.label_id === filters.labelId)) return false;
+        if (filters.overdue) {
+          if (!c.due_date) return false;
+          if (new Date(c.due_date) >= today) return false;
+        }
         return true;
       }),
     };
@@ -217,12 +224,12 @@ export function BoardView({ initialBoard }: Props) {
             )}
           </div>
 
-          {/* Active filter badges (assignee / label only) */}
-          {(filters.assigneeId || filters.labelId) && (
+          {/* Active filter badges */}
+          {(filters.assigneeId || filters.labelId || filters.overdue) && (
             <div className="flex items-center gap-1 flex-wrap">
               {filters.assigneeId && (
                 <Badge variant="secondary" className="gap-1 text-xs pr-1">
-                  {allAssignees.find((a) => a.user_id === filters.assigneeId)?.full_name ?? 'Assignee'}
+                  {workspaceMembers.find((a) => a.user_id === filters.assigneeId)?.full_name ?? 'Assignee'}
                   <button onClick={() => setFilters((f) => ({ ...f, assigneeId: null }))} className="ml-0.5 hover:text-destructive">
                     <X className="h-3 w-3" />
                   </button>
@@ -236,7 +243,15 @@ export function BoardView({ initialBoard }: Props) {
                   </button>
                 </Badge>
               )}
-              <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs text-muted-foreground" onClick={() => setFilters({ assigneeId: null, labelId: null, search: '' })}>
+              {filters.overdue && (
+                <Badge variant="destructive" className="gap-1 text-xs pr-1">
+                  Overdue
+                  <button onClick={() => setFilters((f) => ({ ...f, overdue: false }))} className="ml-0.5 hover:opacity-70">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs text-muted-foreground" onClick={() => setFilters({ assigneeId: null, labelId: null, search: '', overdue: false })}>
                 Clear all
               </Button>
             </div>
@@ -259,12 +274,29 @@ export function BoardView({ initialBoard }: Props) {
       {/* Filter panel */}
       {showFilters && (
         <div className="px-4 py-2 border-b border-border/50 bg-secondary/20 flex flex-wrap gap-4 text-xs">
+          {/* Overdue filter */}
+          <div className="space-y-1">
+            <span className="font-medium text-muted-foreground uppercase tracking-wide">Due Date</span>
+            <div className="flex flex-wrap gap-1">
+              <button
+                onClick={() => setFilters((f) => ({ ...f, overdue: !f.overdue }))}
+                className={`px-2 py-0.5 rounded-full border text-xs transition-colors ${
+                  filters.overdue
+                    ? 'bg-destructive text-destructive-foreground border-destructive'
+                    : 'border-border hover:border-destructive hover:text-destructive'
+                }`}
+              >
+                Overdue
+              </button>
+            </div>
+          </div>
+
           {/* Assignee filter */}
-          {allAssignees.length > 0 && (
+          {workspaceMembers.length > 0 && (
             <div className="space-y-1">
               <span className="font-medium text-muted-foreground uppercase tracking-wide">Assignee</span>
               <div className="flex flex-wrap gap-1">
-                {allAssignees.map((a) => (
+                {workspaceMembers.map((a) => (
                   <button
                     key={a.user_id}
                     onClick={() => setFilters((f) => ({ ...f, assigneeId: f.assigneeId === a.user_id ? null : a.user_id }))}
