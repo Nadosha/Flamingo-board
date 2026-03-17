@@ -104,7 +104,62 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## Architecture & Design Decisions
+## Testing
+
+The project uses **Vitest** with **React Testing Library** for unit and component tests.
+
+### Running tests
+
+```bash
+# Run all tests once
+npm test
+
+# Watch mode — re-runs on file change
+npm run test:watch
+```
+
+### Test files location
+
+Tests live alongside the code they test (`*.test.ts` / `*.test.tsx`):
+
+```
+src/
+  shared/lib/
+    utils.test.ts               # getInitials, formatRelativeTime
+  features/card/
+    lib/filter-cards.test.ts    # filterCards business logic
+    ui/card-item.test.tsx       # CardItem component
+  entities/card/
+    actions.test.ts             # createLabelAction server action
+  test/
+    setup.ts                    # global test setup (@testing-library/jest-dom)
+
+vitest.config.ts                # Vitest configuration (jsdom env + path aliases)
+```
+
+### What's covered
+
+| Test file | Cases | What's tested |
+|---|---|---|
+| `utils.test.ts` — `getInitials` | 6 | null/undefined/empty input, single word, full name, 3-word truncation, uppercasing |
+| `utils.test.ts` — `formatRelativeTime` | 5 | "just now", minutes, hours, days, formatted date; uses `vi.useFakeTimers()` |
+| `filter-cards.test.ts` | 5 | No-op when no filters, search (case-insensitive), assignee filter, overdue filter, combined AND logic |
+| `actions.test.ts` | 3 | Board-not-found error, Supabase insert failure, successful label creation; Supabase mocked with `vi.mock()` |
+| `card-item.test.tsx` | 4 | Title renders, label color swatches, overdue CSS class, `onClick` fires; DnD mocked as passthrough |
+
+### Stack
+
+| Tool | Role |
+|---|---|
+| [Vitest](https://vitest.dev) | Test runner + assertion library |
+| [@testing-library/react](https://testing-library.com/react) | Component rendering & queries |
+| [@testing-library/user-event](https://testing-library.com/user-event) | Simulates real user interactions |
+| [@testing-library/jest-dom](https://github.com/testing-library/jest-dom) | DOM matchers (`toBeInTheDocument`, etc.) |
+| jsdom | Simulated browser DOM for Node.js |
+
+---
+
+
 
 ### Feature-Sliced Design (FSD)
 The codebase follows a simplified FSD structure: `shared → entities → features → widgets → app`. This keeps concerns separated — data access in `entities`, user interactions in `features`, compositions in `widgets`. Makes things easy to locate and avoids circular dependencies.
