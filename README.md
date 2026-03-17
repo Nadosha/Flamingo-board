@@ -10,6 +10,37 @@ A real-time collaborative Kanban board built with Next.js 16, Supabase, and Type
 - **Real-time collaboration** — live board updates and presence indicators via Supabase Realtime
 - **Auth** — email/password registration and login with session persistence
 
+## Requirements Coverage
+
+| # | Requirement | Status |
+|---|---|---|
+| **Auth** | | |
+| 1 | Email/password + Google OAuth | ✅ Done |
+| 2 | User profiles with avatars | ✅ Done |
+| 3 | Invite-only workspaces via magic links | ✅ Done |
+| **Database Schema** | | |
+| 4 | Workspaces | ✅ Done |
+| 5 | Boards (belong to workspace) | ✅ Done |
+| 6 | Columns (ordered within board) | ✅ Done |
+| 7 | Cards (ordered within column, with assignees, labels, due dates) | ✅ Done |
+| 8 | Activity log per card | ⚠️ Schema exists, UI not implemented |
+| **Features** | | |
+| 9 | Create/edit/delete boards and columns | ✅ Done |
+| 10 | Drag-and-drop cards between columns | ✅ Done |
+| 11 | Real-time sync across multiple browser tabs/users | ✅ Done |
+| 12 | Presence indicators showing who's viewing the board | ✅ Done |
+| 13 | Card detail modal with description and activity history | ✅ Done (description + comments) |
+| **Technical Requirements** | | |
+| 14 | Supabase Realtime subscriptions for live updates | ✅ Done |
+| 15 | Optimistic drag-and-drop with conflict resolution | ✅ Done |
+| 16 | @hello-pangea/dnd for drag interactions | ✅ Done |
+| 17 | TypeScript types generated from the Supabase schema | ✅ Done |
+| 18 | Row-Level Security for workspace isolation | ✅ Done |
+| **Bonus** | | |
+| 19 | Markdown editor in card detail | ✅ Done |
+| 20 | Filter cards by assignee/label/due date | ✅ Done |
+| 21 | Undo last action (local state) | ✅ Done |
+
 ## Tech Stack
 
 | Layer | Technology |
