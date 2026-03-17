@@ -166,7 +166,7 @@ export function BoardView({ initialBoard }: Props) {
   return (
     <div className="h-full flex flex-col board-bg">
       {/* Toolbar */}
-      <div className="px-4 py-2 flex items-center justify-between border-b border-border/50 gap-2 flex-wrap">
+      <div className="px-3 py-2 flex items-center justify-between border-b border-border/50 gap-2 shrink-0 overflow-x-auto">
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">
             {board.columns.length} column{board.columns.length !== 1 ? 's' : ''}
@@ -188,7 +188,7 @@ export function BoardView({ initialBoard }: Props) {
               value={filters.search}
               onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
               placeholder="Search cards…"
-              className="h-7 pl-7 pr-6 text-xs w-40 focus:w-56 transition-all"
+              className="h-7 pl-7 pr-6 text-xs w-28 focus:w-44 transition-all"
             />
             {filters.search && (
               <button
@@ -344,7 +344,7 @@ export function BoardView({ initialBoard }: Props) {
                   ) : (
                     <button
                       onClick={() => setAddingColumn(true)}
-                      className="flex-shrink-0 w-64 flex items-center gap-2 border-r border-dashed border-border/40 transition-colors px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
+                      className="flex-shrink-0 w-72 md:w-64 flex items-center gap-2 border-r border-dashed border-border/40 transition-colors px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
                     >
                       <Plus className="h-4 w-4" />
                       Add column

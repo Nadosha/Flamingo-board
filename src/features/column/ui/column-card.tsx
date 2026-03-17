@@ -71,7 +71,7 @@ export function ColumnCard({
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          className={`flex-shrink-0 w-64 flex flex-col max-h-[calc(100vh-160px)] border-r border-border/[26] last:border-r-0 ${
+          className={`flex-shrink-0 w-72 md:w-64 flex flex-col max-h-[calc(100vh-120px)] border-r border-border/[26] last:border-r-0 ${
             snapshot.isDragging ? 'opacity-90 rotate-1' : ''
           }`}
         >

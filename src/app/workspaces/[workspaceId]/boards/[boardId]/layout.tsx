@@ -10,5 +10,5 @@ export default async function BoardPageLayout({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  return <div className="h-screen overflow-hidden">{children}</div>;
+  return <div className="h-full overflow-hidden">{children}</div>;
 }

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, LogOut, Settings, Sun, Moon, Monitor } from 'lucide-react';
+import { LayoutGrid, LogOut, Settings, Sun, Moon, Monitor, Menu } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import {
@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/shared/ui/sheet';
 import { createClient } from '@/shared/lib/supabase/client';
 import { getInitials } from '@/shared/lib/utils';
 
@@ -24,7 +25,7 @@ interface Props {
   };
 }
 
-export function AppSidebar({ user }: Props) {
+function SidebarInner({ user }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
@@ -63,7 +64,7 @@ export function AppSidebar({ user }: Props) {
 
       {/* Theme toggle */}
       <div className="px-3 pb-1">
-          <div className="flex items-center gap-1 rounded-xl bg-secondary/50 p-1">
+        <div className="flex items-center gap-1 rounded-xl bg-secondary/50 p-1">
           {(['light', 'system', 'dark'] as const).map((t) => {
             const Icon = t === 'light' ? Sun : t === 'dark' ? Moon : Monitor;
             return (
@@ -126,3 +127,29 @@ export function AppSidebar({ user }: Props) {
     </aside>
   );
 }
+
+/** Desktop sidebar — hidden on mobile */
+export function AppSidebar({ user }: Props) {
+  return (
+    <div className="hidden md:flex h-full">
+      <SidebarInner user={user} />
+    </div>
+  );
+}
+
+/** Mobile burger + Sheet — placed in the layout's mobile top bar */
+export function MobileSidebar({ user }: Props) {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <button className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-accent transition-colors">
+          <Menu className="h-4 w-4" />
+        </button>
+      </SheetTrigger>
+      <SheetContent side="left" className="p-0 w-56">
+        <SidebarInner user={user} />
+      </SheetContent>
+    </Sheet>
+  );
+}
+
