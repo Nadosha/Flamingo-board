@@ -24,7 +24,7 @@ export default async function WorkspacesPage() {
       </div>
 
       {memberships.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed p-16 text-center">
+        <div className="flex flex-col items-center justify-center rounded-inner border border-dashed p-16 text-center">
           <LayoutGrid className="h-10 w-10 text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold mb-1">No workspaces yet</h3>
           <p className="text-sm text-muted-foreground mb-4">
@@ -65,11 +65,11 @@ async function WorkspaceSection({
     <section>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-soft">
             {workspace.name[0].toUpperCase()}
           </div>
           <h2 className="text-lg font-semibold">{workspace.name}</h2>
-          <span className="text-xs text-muted-foreground capitalize px-1.5 py-0.5 bg-secondary rounded">
+          <span className="text-xs text-muted-foreground capitalize px-2 py-0.5 bg-secondary rounded-full">
             {role}
           </span>
         </div>
@@ -77,7 +77,7 @@ async function WorkspaceSection({
           <InviteButton workspaceId={workspace.id} />
           <Link
             href={`/workspaces/${workspace.id}/settings`}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            className="rounded-full p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
           >
             <Settings className="h-4 w-4" />
           </Link>
@@ -89,7 +89,7 @@ async function WorkspaceSection({
           <Link
             key={board.id}
             href={`/workspaces/${workspace.id}/boards/${board.id}`}
-            className="group relative h-28 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+            className="group relative h-28 rounded-xl overflow-hidden shadow-soft hover:shadow-card transition-shadow cursor-pointer"
             style={{ backgroundColor: board.color }}
           >
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />

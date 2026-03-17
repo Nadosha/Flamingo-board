@@ -37,10 +37,10 @@ export function AppSidebar({ user }: Props) {
   }
 
   return (
-    <aside className="flex h-full w-56 flex-col border-r bg-secondary/30">
+    <aside className="flex h-full w-56 flex-col border-r bg-background/80">
       {/* Logo */}
       <div className="flex items-center gap-2 px-4 py-4 border-b">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-card">
           <LayoutGrid className="h-4 w-4" />
         </div>
         <span className="font-bold text-sm">CollabBoard</span>
@@ -50,7 +50,7 @@ export function AppSidebar({ user }: Props) {
       <nav className="flex-1 p-3 space-y-1">
         <Link
           href="/workspaces"
-          className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+          className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
             pathname === '/workspaces'
               ? 'bg-accent text-accent-foreground'
               : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
@@ -63,14 +63,14 @@ export function AppSidebar({ user }: Props) {
 
       {/* Theme toggle */}
       <div className="px-3 pb-1">
-        <div className="flex items-center gap-1 rounded-md bg-secondary/50 p-1">
+          <div className="flex items-center gap-1 rounded-xl bg-secondary/50 p-1">
           {(['light', 'system', 'dark'] as const).map((t) => {
             const Icon = t === 'light' ? Sun : t === 'dark' ? Moon : Monitor;
             return (
               <button
                 key={t}
                 onClick={() => setTheme(t)}
-                className={`flex-1 flex items-center justify-center rounded p-1 transition-colors ${
+                className={`flex-1 flex items-center justify-center rounded-lg p-1 transition-colors ${
                   theme === t
                     ? 'bg-background shadow-sm text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
@@ -88,7 +88,7 @@ export function AppSidebar({ user }: Props) {
       <div className="border-t p-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors">
+            <button className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-sm hover:bg-accent transition-colors">
               <Avatar className="h-7 w-7">
                 <AvatarImage src={user.avatar_url ?? undefined} />
                 <AvatarFallback className="text-xs">

@@ -71,8 +71,8 @@ export function ColumnCard({
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          className={`flex-shrink-0 w-64 flex flex-col rounded-xl bg-secondary/80 shadow-sm max-h-[calc(100vh-160px)] ${
-            snapshot.isDragging ? 'shadow-xl rotate-1' : ''
+          className={`flex-shrink-0 w-68 flex flex-col rounded-inner bg-secondary/60 backdrop-blur-sm shadow-soft max-h-[calc(100vh-160px)] ${
+            snapshot.isDragging ? 'shadow-card-hover rotate-1' : ''
           }`}
         >
           {/* Column header */}

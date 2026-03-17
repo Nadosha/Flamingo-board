@@ -368,7 +368,7 @@ export function BoardView({ initialBoard }: Props) {
                   ) : (
                     <button
                       onClick={() => setAddingColumn(true)}
-                      className="flex-shrink-0 w-64 flex items-center gap-2 rounded-xl bg-black/10 hover:bg-black/20 transition-colors px-4 py-3 text-sm font-medium text-foreground/70 hover:text-foreground"
+                      className="flex-shrink-0 w-64 flex items-center gap-2 rounded-inner bg-white/40 hover:bg-white/60 dark:bg-white/5 dark:hover:bg-white/10 border border-dashed border-border transition-colors px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground shadow-soft"
                     >
                       <Plus className="h-4 w-4" />
                       Add column

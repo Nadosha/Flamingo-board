@@ -51,8 +51,8 @@ export function CardItem({ card, index, onClick, onDeleted }: Props) {
           onMouseEnter={() => setShowDelete(true)}
           onMouseLeave={() => setShowDelete(false)}
           className={cn(
-            'group relative rounded-lg bg-background border border-border p-3 cursor-pointer hover:shadow-md transition-all text-sm',
-            snapshot.isDragging && 'shadow-xl rotate-1 opacity-90',
+            'group relative rounded-lg bg-card border border-border/60 p-3 cursor-pointer hover:shadow-card transition-all text-sm shadow-soft',
+            snapshot.isDragging && 'shadow-card-hover rotate-1 opacity-90',
           )}
         >
           {/* Delete button */}

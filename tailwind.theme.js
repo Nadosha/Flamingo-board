@@ -40,11 +40,35 @@ const theme = {
         DEFAULT: 'hsl(var(--popover))',
         foreground: 'hsl(var(--popover-foreground))',
       },
+      /* Functional colors */
+      danger: {
+        DEFAULT: '#ff2768',
+        foreground: '#ffffff',
+      },
+      warning: {
+        DEFAULT: '#fbdc17',
+        foreground: '#232a33',
+      },
+      info: {
+        DEFAULT: '#4c78d4',
+        foreground: '#ffffff',
+      },
+      success: {
+        DEFAULT: '#00e7a9',
+        foreground: '#232a33',
+      },
     },
     borderRadius: {
+      outer: '2.5rem',    /* 40px — major containers, modals */
+      inner: '1.875rem',  /* 30px — cards, panels */
       lg: 'var(--radius)',
       md: 'calc(var(--radius) - 2px)',
       sm: 'calc(var(--radius) - 4px)',
+    },
+    boxShadow: {
+      card: 'rgba(0, 0, 0, 0.1) 0px 4px 12px',
+      'card-hover': 'rgba(0, 0, 0, 0.15) 0px 8px 20px',
+      'soft': 'rgba(0, 0, 0, 0.05) 0px 2px 8px',
     },
     keyframes: {
       'accordion-down': {

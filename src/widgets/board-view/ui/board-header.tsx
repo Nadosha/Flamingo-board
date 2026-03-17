@@ -25,7 +25,7 @@ export function BoardHeader({ board, workspaceId }: Props) {
       <span className="text-muted-foreground">/</span>
       <div className="flex items-center gap-2">
         <div
-          className="h-4 w-4 rounded"
+          className="h-5 w-5 rounded-lg"
           style={{ backgroundColor: board.color }}
         />
         <span className="font-semibold text-sm">{board.name}</span>
