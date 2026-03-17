@@ -190,7 +190,94 @@ vitest.config.ts                # Vitest configuration (jsdom env + path aliases
 
 ---
 
+## Project Structure
 
+The project follows Feature-Sliced Design (FSD) architecture:
+
+```
+src/
+├── app
+│   ├── auth
+│   │   ├── callback
+│   │   └── signout
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── invite
+│   │   └── [token]
+│   ├── layout.tsx
+│   ├── login
+│   │   └── page.tsx
+│   ├── page.module.css
+│   ├── page.tsx
+│   ├── register
+│   │   └── page.tsx
+│   └── workspaces
+│       ├── [workspaceId]
+│       ├── layout.tsx
+│       └── page.tsx
+├── entities
+│   ├── board
+│   │   ├── actions.ts
+│   │   └── ui
+│   ├── card
+│   │   ├── actions.test.ts
+│   │   └── actions.ts
+│   ├── column
+│   │   └── actions.ts
+│   └── workspace
+│       ├── actions.ts
+│       └── ui
+├── features
+│   ├── auth
+│   │   ├── actions.ts
+│   │   └── ui
+│   ├── card
+│   │   ├── lib
+│   │   └── ui
+│   ├── column
+│   │   └── ui
+│   ├── presence
+│   │   └── ui
+│   └── realtime
+│       └── hooks
+├── middleware.ts
+├── shared
+│   ├── hooks
+│   │   └── use-toast.ts
+│   ├── lib
+│   │   ├── supabase
+│   │   ├── utils.test.ts
+│   │   └── utils.ts
+│   ├── types
+│   │   ├── database.ts
+│   │   └── index.ts
+│   └── ui
+│       ├── avatar.tsx
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── dialog.tsx
+│       ├── dropdown-menu.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── popover.tsx
+│       ├── scroll-area.tsx
+│       ├── separator.tsx
+│       ├── sheet.tsx
+│       ├── textarea.tsx
+│       ├── theme-provider.tsx
+│       ├── toast.tsx
+│       ├── toaster.tsx
+│       └── tooltip.tsx
+├── test
+│   └── setup.ts
+└── widgets
+    ├── board-view
+    │   └── ui
+    └── sidebar
+        └── ui
+```
+
+---
 
 ### Feature-Sliced Design (FSD)
 The codebase follows a simplified FSD structure: `shared → entities → features → widgets → app`. This keeps concerns separated — data access in `entities`, user interactions in `features`, compositions in `widgets`. Makes things easy to locate and avoids circular dependencies.
