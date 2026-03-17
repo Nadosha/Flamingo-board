@@ -176,6 +176,15 @@ All tables have RLS enabled. Helper functions `is_workspace_member()` and `is_wo
 ### Realtime via Supabase channels
 Board updates subscribe to `postgres_changes` filtered by `board_id`. Presence (online indicators) uses Supabase Presence channels. Both are encapsulated in custom hooks (`use-realtime-board`, `use-presence`) mounted at the board view level.
 
+### Optimistic drag-and-drop with conflict resolution
+`onDragEnd` is synchronous — the board state is updated **immediately** on drop without waiting for the server. The server call fires in the background via `.then().catch()`.
+
+Conflict resolution is handled with two mechanisms:
+
+1. **Auto-revert on failure** — a `savedBoard` snapshot is taken before each drag. If the server action rejects (network error, RLS violation, etc.), the board is rolled back to `savedBoard` automatically. The undo stack entry for that drag is also removed.
+
+2. **Realtime suppression during in-flight ops** — `pendingOpsRef` tracks the number of in-flight drag operations. The `useRealtimeBoard` callback ignores incoming Supabase `postgres_changes` events while `pendingOpsRef > 0`, preventing a server-triggered refetch from overwriting the optimistic state mid-flight. Once all pending ops settle, the next realtime event re-syncs the board normally — picking up any concurrent changes made by other users.
+
 ---
 
 ## What I'd Improve With More Time
