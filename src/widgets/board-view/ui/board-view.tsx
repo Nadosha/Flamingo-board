@@ -188,7 +188,7 @@ export function BoardView({ initialBoard }: Props) {
   const filteredColumns = board.columns.map(filterCards);
 
   return (
-    <div className="h-full flex flex-col" style={{ backgroundColor: `${board.color}15` }}>
+    <div className="h-full flex flex-col board-bg">
       {/* Toolbar */}
       <div className="px-4 py-2 flex items-center justify-between border-b border-border/50 gap-2 flex-wrap">
         <div className="flex items-center gap-2">
@@ -341,7 +341,7 @@ export function BoardView({ initialBoard }: Props) {
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="inline-flex gap-3 p-4 h-full items-start"
+                className="inline-flex gap-0 p-4 h-full items-start"
               >
                 {filteredColumns.map((column, index) => (
                   <ColumnCard
@@ -368,7 +368,7 @@ export function BoardView({ initialBoard }: Props) {
                   ) : (
                     <button
                       onClick={() => setAddingColumn(true)}
-                      className="flex-shrink-0 w-64 flex items-center gap-2 rounded-inner bg-white/40 hover:bg-white/60 dark:bg-white/5 dark:hover:bg-white/10 border border-dashed border-border transition-colors px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground shadow-soft"
+                      className="flex-shrink-0 w-64 flex items-center gap-2 border-r border-dashed border-border/40 transition-colors px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
                     >
                       <Plus className="h-4 w-4" />
                       Add column

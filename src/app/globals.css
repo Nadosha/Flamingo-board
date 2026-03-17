@@ -5,7 +5,7 @@
 @layer base {
   :root {
     /* Background & surface */
-    --background: 225 30% 97%;
+    --background: 36 20% 99%;
     --foreground: 214 19% 17%;        /* #232a33 */
     --card: 0 0% 100%;
     --card-foreground: 214 19% 17%;
@@ -15,18 +15,18 @@
     --primary: 214 19% 17%;           /* #232a33 */
     --primary-foreground: 0 0% 100%;  /* #ffffff */
     /* Neutral surfaces */
-    --secondary: 220 20% 93%;
+    --secondary: 36 12% 95%;
     --secondary-foreground: 214 19% 17%;
-    --muted: 220 20% 93%;
+    --muted: 36 10% 96%;
     --muted-foreground: 210 17% 38%;  /* #506172 */
-    --accent: 220 20% 93%;
+    --accent: 36 12% 93%;
     --accent-foreground: 214 19% 17%;
     /* Status */
     --destructive: 342 100% 58%;      /* #ff2768 */
     --destructive-foreground: 0 0% 100%;
     /* Structure */
-    --border: 220 16% 89%;
-    --input: 220 16% 89%;
+    --border: 36 12% 90%;
+    --input: 36 12% 90%;
     --ring: 214 19% 17%;
     --radius: 0.75rem;
   }
@@ -61,6 +61,13 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.board-bg {
+  background: linear-gradient(to bottom, #ffffff, #f0f0f0);
+}
+.dark .board-bg {
+  background: linear-gradient(to bottom, hsl(215, 27%, 12%), hsl(215, 27%, 9%));
 }
 
 html,

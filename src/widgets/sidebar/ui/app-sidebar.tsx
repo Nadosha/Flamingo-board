@@ -37,7 +37,7 @@ export function AppSidebar({ user }: Props) {
   }
 
   return (
-    <aside className="flex h-full w-56 flex-col border-r bg-background/80">
+    <aside className="flex h-full w-56 flex-col border-r border-border bg-card">
       {/* Logo */}
       <div className="flex items-center gap-2 px-4 py-4 border-b">
         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-card">

@@ -32,7 +32,7 @@ export default async function WorkspacesLayout({
           avatar_url: profileData?.avatar_url ?? null,
         }}
       />
-      <main className="flex-1 overflow-hidden bg-background">
+      <main className="flex-1 overflow-hidden bg-muted">
         {children}
       </main>
     </div>
