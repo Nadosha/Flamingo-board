@@ -178,19 +178,19 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted }: Pro
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+      <DialogContent className="h-full w-full max-w-full md:max-w-2xl md:h-auto md:max-h-[90vh] flex flex-col p-0 md:p-6 gap-0 overflow-y-auto md:overflow-hidden">
         {loading || !card ? (
           <div className="p-8 text-center text-muted-foreground">Loading…</div>
         ) : (
           <>
-            <DialogHeader>
+            <DialogHeader className="px-4 pt-4 md:px-0 md:pt-0 shrink-0">
               <DialogTitle className="text-lg pr-6">{card.title}</DialogTitle>
             </DialogHeader>
 
-            <div className="flex gap-4 flex-1 overflow-hidden">
+            <div className="flex flex-col md:flex-row gap-4 flex-1 md:overflow-hidden px-4 pb-4 md:px-0 md:pb-0">
               {/* Main content */}
-              <ScrollArea className="flex-1">
-                <div className="space-y-5 pr-2">
+              <div className="flex-1 md:overflow-y-auto">
+                <div className="space-y-5 md:pr-2">
                   {/* Description */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -270,10 +270,10 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted }: Pro
                     </div>
                   </div>
                 </div>
-              </ScrollArea>
+              </div>
 
               {/* Right sidebar */}
-              <div className="w-44 flex-shrink-0 space-y-4 overflow-y-auto text-sm">
+              <div className="w-full md:w-44 flex-shrink-0 space-y-4 md:overflow-y-auto text-sm">
 
                 {/* Due Date */}
                 <div>

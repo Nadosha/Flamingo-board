@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, LogOut, Settings, Sun, Moon, Monitor, Menu } from 'lucide-react';
+import { LogOut, Settings, Sun, Moon, Monitor, Menu } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import {
