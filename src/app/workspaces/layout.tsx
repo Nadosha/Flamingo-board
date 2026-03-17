@@ -37,7 +37,7 @@ export default async function WorkspacesLayout({
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center gap-3 h-12 shrink-0 px-3 border-b border-border bg-card">
         <MobileSidebar user={userProps} />
-        <span className="font-bold text-sm">CollabBoard</span>
+        <span className="font-bold text-sm">FlaminGo</span>
       </div>
 
       <main className="flex-1 overflow-hidden bg-muted">

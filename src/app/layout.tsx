@@ -10,7 +10,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: 'CollabBoard — Real-Time Kanban',
+  title: 'FlaminGo — Real-Time Kanban',
   description: 'A real-time collaborative Kanban board built with Next.js and Supabase',
 };
 

@@ -41,10 +41,10 @@ function SidebarInner({ user }: Props) {
     <aside className="flex h-full w-56 flex-col border-r border-border bg-card">
       {/* Logo */}
       <div className="flex items-center gap-2 px-4 py-4 border-b">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-card">
-          <LayoutGrid className="h-4 w-4" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-card text-lg">
+          🦩
         </div>
-        <span className="font-bold text-sm">CollabBoard</span>
+        <span className="font-bold text-sm">FlaminGo</span>
       </div>
 
       {/* Nav */}
@@ -57,7 +57,7 @@ function SidebarInner({ user }: Props) {
               : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
           }`}
         >
-          <LayoutGrid className="h-4 w-4" />
+          <span className="text-base">🦩</span>
           Workspaces
         </Link>
       </nav>
