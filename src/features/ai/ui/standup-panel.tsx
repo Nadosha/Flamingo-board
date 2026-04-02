@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from 'react';
 import { Sparkles, Copy, Check, X, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
 import { Button } from '@/shared/ui/button';
 import { generateStandupAction } from '@/features/ai/actions';
@@ -10,10 +12,12 @@ interface Props {
   boardId: string;
   open: boolean;
   onClose: () => void;
+  result: { message: string; blockers: Array<{ title: string }> } | null;
+  onResult: (r: { message: string; blockers: Array<{ title: string }> }) => void;
+  onRegenerate?: () => void;
 }
 
-export function StandupPanel({ boardId, open, onClose }: Props) {
-  const [result, setResult] = useState<{ message: string; blockers: Array<{ title: string }> } | null>(null);
+export function StandupPanel({ boardId, open, onClose, result, onResult, onRegenerate }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -24,7 +28,7 @@ export function StandupPanel({ boardId, open, onClose }: Props) {
     startTransition(async () => {
       const res = await generateStandupAction(boardId);
       if (res.error) { setError(res.error); return; }
-      setResult(res.result!);
+      onResult(res.result!);
     });
   }
 
@@ -74,7 +78,9 @@ export function StandupPanel({ boardId, open, onClose }: Props) {
         {result && !isPending && (
           <div className="space-y-4">
             <div className="relative rounded-lg border border-border bg-secondary/50 px-4 py-4">
-              <pre className="whitespace-pre-wrap text-sm font-sans leading-relaxed">{result.message}</pre>
+              <div className="prose prose-sm dark:prose-invert max-w-none pr-16 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_p]:leading-relaxed [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5 [&_code]:bg-black/10 [&_code]:dark:bg-white/10 [&_code]:px-1 [&_code]:rounded">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.message}</ReactMarkdown>
+              </div>
               <Button
                 size="sm"
                 variant="outline"
@@ -99,7 +105,7 @@ export function StandupPanel({ boardId, open, onClose }: Props) {
             )}
 
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1" onClick={handleFetch}>
+              <Button variant="outline" size="sm" className="flex-1" onClick={() => { onRegenerate?.(); handleFetch(); }}>
                 Regenerate
               </Button>
               <Button size="sm" onClick={handleCopy} className="flex-1 bg-violet-600 hover:bg-violet-700 text-white">

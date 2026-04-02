@@ -59,6 +59,17 @@ export interface Label {
   color: string;
 }
 
+export interface Subtask {
+  title: string;
+  done: boolean;
+}
+
+export interface AiChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  created_at?: string;
+}
+
 export interface Card {
   id: string;
   column_id: string;
@@ -70,6 +81,7 @@ export interface Card {
   created_by: string;
   created_at: string;
   updated_at: string;
+  subtasks: Subtask[];
 }
 
 export interface CardActivity {

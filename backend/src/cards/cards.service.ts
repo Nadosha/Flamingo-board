@@ -11,6 +11,7 @@ import {
   AddCommentDto,
   ToggleAssigneeDto,
   ToggleLabelDto,
+  AppendChatMessageDto,
 } from './dto/card.dto';
 import { BoardsService } from '../boards/boards.service';
 import { Label, LabelDocument } from '../labels/schemas/label.schema';
@@ -396,6 +397,40 @@ export class CardsService {
         },
       })),
       priority: card.priority ?? null,
+      subtasks: (card.subtasks ?? []).map((s) => ({ title: s.title, done: s.done })),
     };
+  }
+
+  async toggleSubtask(cardId: string, userId: string, index: number) {
+    const card = await this.cardModel.findById(cardId).exec();
+    if (!card) throw new NotFoundException('Card not found');
+    const subtasks = card.subtasks ?? [];
+    if (index < 0 || index >= subtasks.length) throw new NotFoundException('Subtask not found');
+    subtasks[index].done = !subtasks[index].done;
+    card.markModified('subtasks');
+    await card.save();
+    const boardId = await this.getBoardIdForCard(card);
+    if (boardId) this.realtimeGateway.broadcastBoardUpdate(boardId);
+    return this.enrichCard(card);
+  }
+
+  async getChatHistory(cardId: string) {
+    const card = await this.cardModel.findById(cardId).select('chatHistory').exec();
+    if (!card) throw new NotFoundException('Card not found');
+    return (card.chatHistory ?? []).map((m) => ({
+      role: m.role,
+      content: m.content,
+      created_at: m.created_at,
+    }));
+  }
+
+  async appendChatMessage(cardId: string, dto: AppendChatMessageDto) {
+    const card = await this.cardModel.findById(cardId).exec();
+    if (!card) throw new NotFoundException('Card not found');
+    card.chatHistory = card.chatHistory ?? [];
+    card.chatHistory.push({ role: dto.role, content: dto.content, created_at: new Date() } as any);
+    card.markModified('chatHistory');
+    await card.save();
+    return { ok: true };
   }
 }

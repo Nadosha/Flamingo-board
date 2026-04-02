@@ -2,6 +2,8 @@
 
 import { useState, useTransition, useRef, useEffect } from 'react';
 import { Send, Sparkles, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Button } from '@/shared/ui/button';
 import { Textarea } from '@/shared/ui/textarea';
 import { cn } from '@/shared/lib/utils';
@@ -9,6 +11,10 @@ import {
   cardChatAction,
   decomposeCardAction,
 } from '@/features/ai/actions';
+import {
+  getCardChatHistoryAction,
+  appendCardChatMessageAction,
+} from '@/entities/card/actions';
 
 type Message = {
   id: string;
@@ -20,7 +26,7 @@ type Message = {
 };
 
 const QUICK_ACTIONS = [
-  { label: 'Generate subtasks', prompt: 'Break this task down into concrete subtasks.' },
+  { label: 'Generate subtasks', prompt: null },  // handled by sendDecompose
   { label: 'Suggest priority', prompt: 'Analyze this task and suggest the appropriate priority level (low/medium/high) with reasoning.' },
   { label: 'Write standup update', prompt: 'Write a brief async standup update for this task that I can share in Slack.' },
   { label: 'Spot risks', prompt: 'What are the potential risks or blockers for this task?' },
@@ -36,15 +42,38 @@ export function CardAiChat({ cardId, onPriorityApplied, onCardsCreated }: Props)
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isPending, startTransition] = useTransition();
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Load persisted chat history on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { history } = await getCardChatHistoryAction(cardId);
+      if (!cancelled && history.length > 0) {
+        setMessages(
+          history.map((m) => ({
+            id: crypto.randomUUID(),
+            role: m.role as 'user' | 'assistant',
+            content: m.content,
+          })),
+        );
+      }
+      if (!cancelled) setIsLoadingHistory(false);
+    })();
+    return () => { cancelled = true; };
+  }, [cardId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  function addMessage(msg: Omit<Message, 'id'>) {
+  function addMessage(msg: Omit<Message, 'id'>, persist = false) {
     const id = crypto.randomUUID();
     setMessages((prev) => [...prev, { ...msg, id }]);
+    if (persist && (msg.role === 'user' || msg.role === 'assistant')) {
+      appendCardChatMessageAction(cardId, msg.role, msg.content);
+    }
     return id;
   }
 
@@ -52,14 +81,14 @@ export function CardAiChat({ cardId, onPriorityApplied, onCardsCreated }: Props)
     if (!text.trim() || isPending) return;
     const userMsg = text.trim();
     setInput('');
-    addMessage({ role: 'user', content: userMsg });
+    addMessage({ role: 'user', content: userMsg }, true);
 
     const history = messages.map((m) => ({ role: m.role, content: m.content }));
 
     startTransition(async () => {
       const { result, error } = await cardChatAction(cardId, userMsg, history);
       if (error || !result) {
-        addMessage({ role: 'assistant', content: error ?? 'Something went wrong. Please try again.' });
+        addMessage({ role: 'assistant', content: error ?? 'Something went wrong. Please try again.' }, true);
         return;
       }
 
@@ -69,10 +98,34 @@ export function CardAiChat({ cardId, onPriorityApplied, onCardsCreated }: Props)
         action: result.action,
         createdCardIds: result.createdCardIds,
         appliedPriority: result.appliedPriority,
-      });
+      }, true);
 
       if (result.appliedPriority) onPriorityApplied?.(result.appliedPriority);
       if (result.createdCardIds.length > 0) onCardsCreated?.();
+    });
+  }
+
+  function sendDecompose() {
+    if (isPending) return;
+    addMessage({ role: 'user', content: 'Generate subtasks' }, true);
+    startTransition(async () => {
+      const { result, error } = await decomposeCardAction(cardId, { createCards: true });
+      if (error || !result) {
+        addMessage({ role: 'assistant', content: error ?? 'Something went wrong.' }, true);
+        return;
+      }
+      if (result.needsClarification) {
+        addMessage({ role: 'assistant', content: result.question ?? 'Please clarify the task first.' }, true);
+        return;
+      }
+      const subtaskList = (result.subtasks ?? []).map((t, i) => `${i + 1}. ${t}`).join('\n');
+      addMessage({
+        role: 'assistant',
+        content: subtaskList + '\n\n✅ Subtasks saved to this card — see the checklist above.',
+        action: 'createSubtasks',
+        createdCardIds: [],
+      }, true);
+      onCardsCreated?.();
     });
   }
 
@@ -121,7 +174,7 @@ export function CardAiChat({ cardId, onPriorityApplied, onCardsCreated }: Props)
         {QUICK_ACTIONS.map((a) => (
           <button
             key={a.label}
-            onClick={() => sendMessage(a.prompt)}
+            onClick={() => a.prompt ? sendMessage(a.prompt) : sendDecompose()}
             disabled={isPending}
             className="text-xs px-2.5 py-1 rounded-full border border-violet-300/60 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-800 dark:hover:bg-violet-900/50 transition-colors disabled:opacity-50"
           >
@@ -132,12 +185,16 @@ export function CardAiChat({ cardId, onPriorityApplied, onCardsCreated }: Props)
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3 min-h-0">
-        {messages.length === 0 && (
+        {isLoadingHistory ? (
+          <div className="flex justify-center mt-8">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          </div>
+        ) : messages.length === 0 ? (
           <div className="text-center text-xs text-muted-foreground mt-8 px-4">
             <Sparkles className="h-8 w-8 mx-auto mb-2 text-violet-300 dark:text-violet-700" />
             Ask the AI about this task or use the quick actions above.
           </div>
-        )}
+        ) : null}
 
         {messages.map((msg) => (
           <div
@@ -157,7 +214,13 @@ export function CardAiChat({ cardId, onPriorityApplied, onCardsCreated }: Props)
                   : 'bg-secondary text-foreground rounded-tl-sm',
               )}
             >
-              <p className="whitespace-pre-wrap">{msg.content}</p>
+              {msg.role === 'user' ? (
+                <p className="whitespace-pre-wrap">{msg.content}</p>
+              ) : (
+                <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_p]:leading-relaxed [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5 [&_code]:bg-black/10 [&_code]:dark:bg-white/10 [&_code]:px-1 [&_code]:rounded [&_pre]:bg-black/10 [&_pre]:dark:bg-white/10 [&_pre]:p-2 [&_pre]:rounded [&_pre_code]:bg-transparent [&_pre_code]:p-0">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                </div>
+              )}
 
               {/* Action buttons on assistant messages */}
               {msg.role === 'assistant' && msg.action === 'createSubtasks' && msg.createdCardIds && msg.createdCardIds.length === 0 && (

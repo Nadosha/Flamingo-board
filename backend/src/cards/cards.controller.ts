@@ -17,6 +17,7 @@ import {
   AddCommentDto,
   ToggleAssigneeDto,
   ToggleLabelDto,
+  AppendChatMessageDto,
 } from './dto/card.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator';
@@ -107,5 +108,27 @@ export class CardsController {
     @Param('labelId') labelId: string,
   ) {
     return this.cardsService.removeLabel(id, user.id, { label_id: labelId });
+  }
+
+  @Patch(':id/subtasks/:index/toggle')
+  toggleSubtask(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Param('index') index: string,
+  ) {
+    return this.cardsService.toggleSubtask(id, user.id, parseInt(index, 10));
+  }
+
+  @Get(':id/chat-history')
+  getChatHistory(@Param('id') id: string) {
+    return this.cardsService.getChatHistory(id);
+  }
+
+  @Post(':id/chat-history')
+  appendChatMessage(
+    @Param('id') id: string,
+    @Body() dto: AppendChatMessageDto,
+  ) {
+    return this.cardsService.appendChatMessage(id, dto);
   }
 }

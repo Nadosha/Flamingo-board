@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, Sparkles, ChevronDown } from "lucide-react";
 import type { Board } from "@/shared/types";
@@ -14,13 +14,51 @@ import {
 import { PrioritizationPanel } from "@/features/ai/ui/prioritization-panel";
 import { StandupPanel } from "@/features/ai/ui/standup-panel";
 
-interface Props {
-  board: Board;
+const TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+function loadCachedResult(boardId: string, key: string) {
+  try {
+    const raw = localStorage.getItem(`${key}_${boardId}`);
+    if (!raw) return null;
+    const { result, ts } = JSON.parse(raw);
+    if (Date.now() - ts > TTL_MS) {
+      localStorage.removeItem(`${key}_${boardId}`);
+      return null;
+    }
+    return result;
+  } catch {
+    return null;
+  }
 }
 
-export function BoardHeader({ board }: Props) {
+function saveCachedResult(boardId: string, key: string, result: any) {
+  try {
+    localStorage.setItem(`${key}_${boardId}`, JSON.stringify({ result, ts: Date.now() }));
+  } catch {}
+}
+
+function clearCachedResult(boardId: string, key: string) {
+  try { localStorage.removeItem(`${key}_${boardId}`); } catch {}
+}
+
+interface Props {
+  board: Board;
+  onCardClick?: (cardId: string) => void;
+}
+
+export function BoardHeader({ board, onCardClick }: Props) {
   const [showPrioritize, setShowPrioritize] = useState(false);
   const [showStandup, setShowStandup] = useState(false);
+  const [prioritizeResult, setPrioritizeResult] = useState<{ rankedCards: any[]; summary: string } | null>(null);
+  const [standupResult, setStandupResult] = useState<{ message: string; blockers: Array<{ title: string }> } | null>(null);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const cached = loadCachedResult(board.id, 'prioritize');
+    if (cached) setPrioritizeResult(cached);
+    const cachedStandup = loadCachedResult(board.id, 'standup');
+    if (cachedStandup) setStandupResult(cachedStandup);
+  }, [board.id]);
 
   return (
     <>
@@ -71,11 +109,18 @@ export function BoardHeader({ board }: Props) {
         boardId={board.id}
         open={showPrioritize}
         onClose={() => setShowPrioritize(false)}
+        onCardClick={(id) => { setShowPrioritize(false); onCardClick?.(id); }}
+        result={prioritizeResult}
+        onResult={(r) => { setPrioritizeResult(r); saveCachedResult(board.id, 'prioritize', r); }}
+        onReanalyze={() => { clearCachedResult(board.id, 'prioritize'); setPrioritizeResult(null); }}
       />
       <StandupPanel
         boardId={board.id}
         open={showStandup}
         onClose={() => setShowStandup(false)}
+        result={standupResult}
+        onResult={(r) => { setStandupResult(r); saveCachedResult(board.id, 'standup', r); }}
+        onRegenerate={() => { clearCachedResult(board.id, 'standup'); setStandupResult(null); }}
       />
     </>
   );
