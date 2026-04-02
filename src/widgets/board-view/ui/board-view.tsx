@@ -23,6 +23,8 @@ import type { BoardWithColumns, ColumnWithCards, CardWithRelations } from '@/sha
 
 interface Props {
   initialBoard: BoardWithColumns;
+  externalCardId?: string | null;
+  onExternalCardClose?: () => void;
 }
 
 interface Filters {
@@ -32,7 +34,7 @@ interface Filters {
   overdue: boolean;
 }
 
-export function BoardView({ initialBoard }: Props) {
+export function BoardView({ initialBoard, externalCardId, onExternalCardClose }: Props) {
   const [board, setBoard] = useState<BoardWithColumns>(initialBoard);
   const [addingColumn, setAddingColumn] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -147,7 +149,7 @@ export function BoardView({ initialBoard }: Props) {
       });
 
       pendingOpsRef.current++;
-      reorderCardsAction(affectedCards)
+      reorderCardsAction(affectedCards, board.id)
         .catch(() => {
           // Conflict resolution: revert optimistic update on failure
           setBoard(savedBoard);
@@ -388,11 +390,11 @@ export function BoardView({ initialBoard }: Props) {
       </div>
 
       {/* Card detail modal */}
-      {selectedCardId && (
+      {(selectedCardId || externalCardId) && (
         <CardDetailModal
-          cardId={selectedCardId}
+          cardId={(selectedCardId || externalCardId)!}
           boardId={board.id}
-          onClose={() => setSelectedCardId(null)}
+          onClose={() => { setSelectedCardId(null); onExternalCardClose?.(); }}
           onCardDeleted={handleCardDeleted}
           onBoardRefresh={() => { /* WebSocket handles refresh automatically */ }}
         />

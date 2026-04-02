@@ -1,5 +1,6 @@
 import { acceptInviteAction } from '@/entities/workspace/actions';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 
 interface Props {
@@ -8,6 +9,13 @@ interface Props {
 
 export default async function InvitePage({ params }: Props) {
   const { token } = await params;
+
+  const cookieStore = await cookies();
+  const authToken = cookieStore.get('token')?.value;
+  if (!authToken) {
+    redirect(`/login?next=/invite/${token}`);
+  }
+
   const result = await acceptInviteAction(token);
 
   if (result?.error) {

@@ -72,6 +72,15 @@ export async function deleteCardAction(cardId: string) {
   }
 }
 
+export async function toggleSubtaskAction(cardId: string, index: number) {
+  try {
+    await cardsApi.toggleSubtask(cardId, index);
+    return { success: true };
+  } catch {
+    return { success: false };
+  }
+}
+
 export async function getCardWithRelationsAction(cardId: string) {
   try {
     return await cardsApi.get(cardId);
@@ -117,6 +126,28 @@ export async function removeCardLabelAction(cardId: string, labelId: string) {
   } catch (err) {
     const message = err instanceof ApiError ? err.message : 'Failed to remove label';
     return { error: message };
+  }
+}
+
+export async function getCardChatHistoryAction(cardId: string) {
+  try {
+    const history = await cardsApi.getChatHistory(cardId);
+    return { history };
+  } catch {
+    return { history: [] };
+  }
+}
+
+export async function appendCardChatMessageAction(
+  cardId: string,
+  role: 'user' | 'assistant',
+  content: string,
+) {
+  try {
+    await cardsApi.appendChatMessage(cardId, role, content);
+    return { success: true };
+  } catch {
+    return { success: false };
   }
 }
 

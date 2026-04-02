@@ -150,19 +150,11 @@ export class AiService {
       subtasks = subtasksRaw.split('\n').filter((l) => l.trim().length > 0).slice(0, 7);
     }
 
-    // Step 4 (optional): Create cards in DB
+    // Step 4 (optional): Save subtasks to parent card
     let createdCardIds: string[] = [];
     if (opts.createCards && subtasks.length > 0) {
-      const created = await Promise.all(
-        subtasks.map((title, i) =>
-          this.cardsService.createCard(userId, {
-            column_id: card.column_id,
-            title,
-            position: card.position + i + 1,
-          }),
-        ),
-      );
-      createdCardIds = created.map((c) => c.id);
+      const subtaskDocs = subtasks.map((title) => ({ title, done: false }));
+      await this.cardsService.updateCard(cardId, userId, { subtasks: subtaskDocs } as any);
     }
 
     return { needsClarification: false, subtasks, createdCardIds };

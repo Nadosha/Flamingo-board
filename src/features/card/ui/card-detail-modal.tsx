@@ -30,6 +30,7 @@ import {
   getBoardMembersAction,
   getBoardLabelsAction,
   createLabelAction,
+  toggleSubtaskAction,
 } from '@/entities/card/actions';
 import { CardAiChat } from '@/features/ai/ui/card-ai-chat';
 import { formatRelativeTime, getInitials } from '@/shared/lib/utils';
@@ -62,6 +63,7 @@ type CardDetail = {
   assignees: CardAssignee[];
   labels: CardLabelEntry[];
   card_activities?: ActivityEntry[];
+  subtasks?: Array<{ title: string; done: boolean }>;
 };
 
 const PRIORITY_CONFIG = {
@@ -218,6 +220,19 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted, onBoa
     });
   }
 
+  function handleToggleSubtask(index: number) {
+    if (!card) return;
+    startTransition(async () => {
+      await toggleSubtaskAction(card.id, index);
+      setCard((prev) => {
+        if (!prev) return prev;
+        const subtasks = [...(prev.subtasks ?? [])];
+        subtasks[index] = { ...subtasks[index], done: !subtasks[index].done };
+        return { ...prev, subtasks };
+      });
+    });
+  }
+
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="w-full max-w-5xl h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
@@ -281,6 +296,48 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted, onBoa
 
                   <Separator />
 
+                  {/* Subtasks checklist */}
+                  {card.subtasks && card.subtasks.length > 0 && (
+                    <>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="text-xs text-muted-foreground uppercase tracking-wide">
+                            Subtasks ({card.subtasks.filter((s) => s.done).length}/{card.subtasks.length})
+                          </Label>
+                        </div>
+                        {/* Progress bar */}
+                        <div className="h-1.5 w-full bg-secondary rounded-full mb-3 overflow-hidden">
+                          <div
+                            className="h-full bg-green-500 rounded-full transition-all"
+                            style={{ width: `${Math.round((card.subtasks.filter((s) => s.done).length / card.subtasks.length) * 100)}%` }}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          {card.subtasks.map((subtask, i) => (
+                            <button
+                              key={i}
+                              onClick={() => handleToggleSubtask(i)}
+                              disabled={isPending}
+                              className="w-full flex items-start gap-2.5 text-left rounded-md px-2 py-1.5 hover:bg-secondary/60 transition-colors group"
+                            >
+                              <div className={`mt-0.5 h-4 w-4 rounded flex-shrink-0 border-2 flex items-center justify-center transition-colors ${subtask.done ? 'bg-green-500 border-green-500' : 'border-muted-foreground/40 group-hover:border-muted-foreground'}`}>
+                                {subtask.done && (
+                                  <svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                              <span className={`text-sm leading-snug ${subtask.done ? 'line-through text-muted-foreground' : ''}`}>
+                                {subtask.title}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <Separator />
+                    </>
+                  )}
+
                   {/* Activity */}
                   <div>
                     <Label className="text-xs text-muted-foreground uppercase tracking-wide mb-3 block flex items-center gap-1.5">
@@ -288,7 +345,19 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted, onBoa
                       Activity
                     </Label>
                     <div className="space-y-2 mb-4">
-                      <Textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Write a comment…" rows={2} className="text-sm resize-none" />
+                      <Textarea
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleAddComment();
+                          }
+                        }}
+                        placeholder="Write a comment… (Enter to send, Shift+Enter for new line)"
+                        rows={2}
+                        className="text-sm resize-none"
+                      />
                       <Button size="sm" onClick={handleAddComment} disabled={isPending || !comment.trim()}>Comment</Button>
                     </div>
                     <div className="space-y-3">
@@ -303,7 +372,7 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted, onBoa
                             <div className="flex-1">
                               <span className="font-medium">{activity.profile?.full_name ?? 'Unknown'}</span>{' '}
                               {activity.type === 'card_commented' ? (
-                                <div className="mt-1 bg-secondary rounded-md px-3 py-2 text-sm">{activity.content}</div>
+                                <div className="mt-1 bg-secondary rounded-md px-3 py-2 text-sm whitespace-pre-wrap">{activity.content}</div>
                               ) : (
                                 <span className="text-muted-foreground">{activity.content}</span>
                               )}
@@ -528,7 +597,12 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted, onBoa
                 <CardAiChat
                   cardId={cardId}
                   onPriorityApplied={(p) => setCard((prev) => prev ? { ...prev, priority: p as any } : prev)}
-                  onCardsCreated={() => onBoardRefresh?.()}
+                  onCardsCreated={async () => {
+                    // Reload card to pick up new subtasks
+                    const updated = await getCardWithRelationsAction(cardId);
+                    setCard(normalizeCard(updated));
+                    onBoardRefresh?.();
+                  }}
                 />
               </div>
 

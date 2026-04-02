@@ -1,4 +1,21 @@
-import { IsString, IsNumber, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsEnum, IsArray, ValidateNested, IsMongoId, IsBoolean } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class SubtaskDto {
+  @IsString()
+  title: string;
+
+  @IsBoolean()
+  done: boolean;
+}
+
+export class AppendChatMessageDto {
+  @IsEnum(['user', 'assistant'])
+  role: 'user' | 'assistant';
+
+  @IsString()
+  content: string;
+}
 
 export class CreateCardDto {
   @IsString()
@@ -38,6 +55,12 @@ export class UpdateCardDto {
   @IsOptional()
   @IsEnum(['low', 'medium', 'high', null])
   priority?: 'low' | 'medium' | 'high' | null;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SubtaskDto)
+  subtasks?: SubtaskDto[];
 }
 
 export class MoveCardDto {
@@ -51,8 +74,25 @@ export class MoveCardDto {
   source_column_id: string;
 }
 
+export class CardReorderItem {
+  @IsMongoId()
+  id: string;
+
+  @IsNumber()
+  position: number;
+
+  @IsMongoId()
+  column_id: string;
+}
+
 export class ReorderCardsDto {
-  updates: Array<{ id: string; position: number; column_id: string }>;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CardReorderItem)
+  updates: CardReorderItem[];
+
+  @IsOptional()
+  @IsMongoId()
   board_id?: string;
 }
 

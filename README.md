@@ -269,60 +269,75 @@ The script is **idempotent** — re-running it prints a warning and exits withou
 
 #### Block 1 — Auth & Workspace
 
-| # | Action | Expected result |
-|---|--------|-----------------|
-| 1.1 | Go to [http://localhost:3000](http://localhost:3000) and log in as `alex.morgan@devlog.io` / `Demo1234!` | Redirected to `/workspaces`; tile **"Acme Dev Team"** is visible |
-| 1.2 | Open the workspace | Left sidebar shows board **"DevLog — Sprint 1"** |
-| 1.3 | Open the board | 4 columns: Backlog (3) · In Progress (3) · Review / QA (2) · Done (2) |
+| # | Action | Expected result | Status |
+|---|--------|-----------------|--------|
+| 1.1 | Go to [http://localhost:3000](http://localhost:3000) and log in as `alex.morgan@devlog.io` / `Demo1234!` | Redirected to `/workspaces`; tile **"Acme Dev Team"** is visible | ✅ |
+| 1.2 | Open the workspace | Left sidebar shows board **"DevLog — Sprint 1"** | ✅ |
+| 1.3 | Open the board | 4 columns: Backlog (3) · In Progress (3) · Review / QA (2) · Done (2) | ✅ |
 
 #### Block 2 — Priority badges & card detail
 
-| # | Action | Expected result |
-|---|--------|-----------------|
-| 2.1 | Look at the **In Progress** column | Cards **"Build AI task prioritization agent"** and **"Fix drag-and-drop on mobile Safari"** show a red dot (high) + **Overdue** badge |
-| 2.2 | Click **"Build AI task prioritization agent"** | 3-column modal: description · metadata sidebar · AI chat panel |
-| 2.3 | In metadata sidebar, change priority to **Medium** | Dot changes red → yellow; card updates live via WebSocket |
-| 2.4 | Revert priority to **High** | Red dot returns |
-| 2.5 | Drag **"Implement card search & keyword filter"** into **Review / QA** | Card moves instantly; all positions update |
+| # | Action | Expected result | Status |
+|---|--------|-----------------|--------|
+| 2.1 | Look at the **In Progress** column | Cards **"Build AI task prioritization agent"** and **"Fix drag-and-drop on mobile Safari"** show a red dot (high) + **Overdue** badge | ✅ |
+| 2.2 | Click **"Build AI task prioritization agent"** | 3-column modal: description · metadata sidebar · AI chat panel | ✅ |
+| 2.3 | In metadata sidebar, change priority to **Medium** | Dot changes red → yellow; card updates live via WebSocket | ✅ |
+| 2.4 | Revert priority to **High** | Red dot returns | ✅ |
+| 2.5 | Drag **"Implement card search & keyword filter"** into **Review / QA** | Card moves instantly; all positions update | ✅ |
 
 #### Block 3 — Real-time collaboration
 
-| # | Action | Expected result |
-|---|--------|-----------------|
-| 3.1 | Open the same board in a **second browser tab** | Both tabs show Alex's avatar in the board header (presence indicator) |
-| 3.2 | In tab 1, drag any card to another column | Tab 2 updates **without page reload** |
-| 3.3 | In tab 1, add a comment to a card | Tab 2 board refreshes (Socket.IO `board-update` fires) |
+| # | Action | Expected result | Status |
+|---|--------|-----------------|--------|
+| 3.1 | Open the same board in a **second browser tab** | Both tabs show Alex's avatar in the board header (presence indicator) | ✅ |
+| 3.2 | In tab 1, drag any card to another column | Tab 2 updates **without page reload** | ✅ |
+| 3.3 | In tab 1, add a comment to a card | Tab 2 board refreshes (Socket.IO `board-update` fires) | ✅ |
 
 #### Block 4 — AI chat (inside card)
 
-| # | Action | Expected result |
-|---|--------|-----------------|
-| 4.1 | Open **"Build AI task prioritization agent"** | Right panel shows 4 quick chips: *Generate subtasks · Suggest priority · Write standup update · Spot risks* |
-| 4.2 | Click **"Generate subtasks"** | AI returns 3–5 subtask titles; **"Create subtasks on board"** button appears below the message |
-| 4.3 | Click **"Create subtasks on board"** | New cards appear in the same column; board refreshes live |
-| 4.4 | Click **"Suggest priority"** | AI recommends a priority with one-sentence reasoning based on card description |
-| 4.5 | Type `"What are the main risks of this task?"` and press Enter | Context-specific response mentioning overdue status, streaming complexity, error handling |
+| # | Action | Expected result | Status |
+|---|--------|-----------------|--------|
+| 4.1 | Open **"Build AI task prioritization agent"** | Right panel shows 4 quick chips: *Generate subtasks · Suggest priority · Write standup update · Spot risks* | ✅ |
+| 4.2 | Click **"Generate subtasks"** | AI returns 3–5 subtask titles saved as checklist inside the card | ✅ |
+| 4.3 | Check off a subtask | Checkbox toggles; progress bar updates | ✅ |
+| 4.4 | Click **"Suggest priority"** | AI recommends a priority with one-sentence reasoning based on card description | ✅ |
+| 4.5 | Type `"What are the main risks of this task?"` and press Enter | Context-specific response mentioning overdue status, streaming complexity, error handling | ✅ |
 
 #### Block 5 — AI Assist board-level panels
 
-| # | Action | Expected result |
-|---|--------|-----------------|
-| 5.1 | Click **"AI Assist ▾"** in the board header | Dropdown: **Prioritize day** and **Generate standup** |
-| 5.2 | **Prioritize day** → **Analyze board** button | Ranked list appears; overdue high-priority cards occupy positions 1–2 with reasoning |
-| 5.3 | **Generate standup** → **Generate standup** button | Slack-style message: ✅ Done · 🔄 In Progress · 🚨 Blockers (2 overdue cards listed) |
-| 5.4 | **Copy to clipboard** | Message copied; paste into any editor to verify content |
+| # | Action | Expected result | Status |
+|---|--------|-----------------|--------|
+| 5.1 | Click **"AI Assist ▾"** in the board header | Dropdown: **Prioritize day** and **Generate standup** | ✅ |
+| 5.2 | **Prioritize day** → **Analyze board** button | Ranked list appears; overdue high-priority cards occupy positions 1–2 with reasoning | ✅ |
+| 5.3 | **Generate standup** → **Generate standup** button | Slack-style message: ✅ Done · 🔄 In Progress · 🚨 Blockers (2 overdue cards listed) | ✅ |
+| 5.4 | **Copy to clipboard** | Message copied; paste into any editor to verify content | ✅ |
 
 #### Block 6 — Comments & activity log
 
-| # | Action | Expected result |
-|---|--------|-----------------|
-| 6.1 | Open **"Fix drag-and-drop on mobile Safari"** | Activity log shows Sarah's seeded comment: *"Reproduced on iPhone 13 (Safari 17.4)…"* |
-| 6.2 | Type `"PR up for review"` and submit | Comment appears at top of activity feed with Alex's name and timestamp |
+| # | Action | Expected result | Status |
+|---|--------|-----------------|--------|
+| 6.1 | Open **"Fix drag-and-drop on mobile Safari"** | Activity log shows Sarah's seeded comment: *"Reproduced on iPhone 13 (Safari 17.4)…"* | ✅ |
+| 6.2 | Type `"PR up for review"` and submit | Comment appears at top of activity feed with Alex's name and timestamp | ✅ |
 
 #### Block 7 — Invite flow
 
-| # | Action | Expected result |
-|---|--------|-----------------|
-| 7.1 | In workspace settings click **Invite member** and copy the link | URL of the form `/invite/[token]` |
-| 7.2 | Open the link in an **incognito window** | Registration page pre-scoped to the workspace invite |
-| 7.3 | Register a new account | Auto-added to **Acme Dev Team** as member; redirected to workspace |
+| # | Action | Expected result | Status |
+|---|--------|-----------------|--------|
+| 7.1 | In workspace settings click **Invite member** and copy the link | URL of the form `/invite/[token]` | ✅ |
+| 7.2 | Open the link in an **incognito window** | Sign-in page with `?next=/invite/[token]`; after login auto-redirects back | ✅ |
+| 7.3 | Register a new account | Auto-added to **Acme Dev Team** as member; redirected to workspace | ✅ |
+
+---
+
+## If I Had More Time
+
+A list of deliberate shortcuts taken under time pressure and what a production-grade solution would look like.
+
+| Area | What was shipped | What I'd do with more time |
+|------|-----------------|---------------------------|
+| **Prioritize day — caching** | Result stored in `localStorage` with a 24-hour TTL (`prioritize_<boardId>`). Resets on page reload after expiry. | Store the result in MongoDB alongside the board document (`lastPrioritization: { result, generatedAt }`). Expose a `GET /boards/:id/prioritization` endpoint. Add a background job (Bull/BullMQ) or a cron to auto-expire results older than 24 h server-side, ensuring all users and devices see a consistent, board-scoped snapshot regardless of client state. |
+| **AI chat history** | Full conversation embedded as an array inside the `Card` document. Grows unboundedly. | Move chat to a dedicated `ChatThread` collection with pagination. Cap embedded history to the last N messages. Add indexes on `card_id + created_at` for efficient retrieval. |
+| **Subtasks** | Embedded array on `Card`. No ordering, no assignee, no due date. | Promote subtasks to a lightweight standalone collection so they can be reordered, assigned, and have their own due dates and completion events in the activity log. |
+| **AI prompt reliability** | GPT responses are parsed with a `try/catch` fallback; no output schema validation. | Use OpenAI's [Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs) (`response_format: { type: "json_schema", ... }`) to guarantee valid JSON every time. Add Zod validation on the parsed result. |
+| **Real-time AI actions** | AI-applied changes (priority update, subtasks) trigger a full board `broadcastBoardUpdate` and the client reloads everything. | Emit granular WebSocket events (`card:priority_changed`, `card:subtasks_updated`) so only the affected card re-renders rather than the whole board. |
+

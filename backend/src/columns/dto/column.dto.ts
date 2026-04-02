@@ -1,4 +1,5 @@
-import { IsString, MinLength, IsNumber, IsOptional } from 'class-validator';
+import { IsString, MinLength, IsNumber, IsOptional, IsArray, ValidateNested, IsMongoId } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateColumnDto {
   @IsString()
@@ -22,7 +23,21 @@ export class UpdateColumnDto {
   position?: number;
 }
 
+export class ColumnReorderItem {
+  @IsMongoId()
+  id: string;
+
+  @IsNumber()
+  position: number;
+}
+
 export class ReorderColumnsDto {
-  updates: Array<{ id: string; position: number }>;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ColumnReorderItem)
+  updates: ColumnReorderItem[];
+
+  @IsOptional()
+  @IsMongoId()
   board_id?: string;
 }

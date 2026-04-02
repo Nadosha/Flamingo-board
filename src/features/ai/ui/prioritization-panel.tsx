@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { Sparkles, X, ArrowUp, ArrowRight, ArrowDown, Loader2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
 import { Button } from '@/shared/ui/button';
+import { cn } from '@/shared/lib/utils';
 import { prioritizeBoardAction } from '@/features/ai/actions';
 
 interface RankedCard {
@@ -23,10 +24,13 @@ interface Props {
   boardId: string;
   open: boolean;
   onClose: () => void;
+  onCardClick?: (cardId: string) => void;
+  result: { rankedCards: RankedCard[]; summary: string } | null;
+  onResult: (r: { rankedCards: RankedCard[]; summary: string }) => void;
+  onReanalyze?: () => void;
 }
 
-export function PrioritizationPanel({ boardId, open, onClose }: Props) {
-  const [result, setResult] = useState<{ rankedCards: RankedCard[]; summary: string } | null>(null);
+export function PrioritizationPanel({ boardId, open, onClose, onCardClick, result, onResult, onReanalyze }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -35,7 +39,7 @@ export function PrioritizationPanel({ boardId, open, onClose }: Props) {
     startTransition(async () => {
       const res = await prioritizeBoardAction(boardId);
       if (res.error) { setError(res.error); return; }
-      setResult(res.result!);
+      onResult(res.result!);
     });
   }
 
@@ -82,7 +86,16 @@ export function PrioritizationPanel({ boardId, open, onClose }: Props) {
 
             <div className="space-y-3">
               {result.rankedCards.map((item, i) => (
-                <div key={i} className="rounded-lg border border-border bg-card p-3 space-y-1.5">
+                <div
+                  key={i}
+                  className={cn(
+                    'rounded-lg border border-border bg-card p-3 space-y-1.5',
+                    item.card?.id && onCardClick
+                      ? 'cursor-pointer hover:bg-accent hover:border-violet-300/60 transition-colors'
+                      : '',
+                  )}
+                  onClick={() => item.card?.id && onCardClick?.(item.card.id)}
+                >
                   <div className="flex items-start gap-2">
                     <span className="text-xs font-bold text-muted-foreground w-5 shrink-0 pt-0.5">#{i + 1}</span>
                     {item.card?.priority && (PRIORITY_ICON[item.card.priority] ?? null)}
@@ -93,7 +106,7 @@ export function PrioritizationPanel({ boardId, open, onClose }: Props) {
               ))}
             </div>
 
-            <Button variant="outline" size="sm" className="w-full" onClick={handleFetch}>
+            <Button variant="outline" size="sm" className="w-full" onClick={() => { onReanalyze?.(); handleFetch(); }}>
               Re-analyze
             </Button>
           </div>

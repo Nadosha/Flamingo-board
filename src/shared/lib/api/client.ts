@@ -2,7 +2,7 @@
  * Base fetch wrapper for HolyMoly REST API.
  * Sends cookies with every request (credentials: 'include').
  */
-import type { Card, Column } from '@/shared/types';
+import type { Card, Column, AiChatMessage } from '@/shared/types';
 
 const API_BASE =
   (typeof window === 'undefined'
@@ -179,6 +179,18 @@ export const cardsApi = {
 
   removeLabel: (cardId: string, labelId: string) =>
     request(`/cards/${cardId}/labels/${labelId}`, { method: 'DELETE' }),
+
+  toggleSubtask: (cardId: string, index: number) =>
+    request(`/cards/${cardId}/subtasks/${index}/toggle`, { method: 'PATCH' }),
+
+  getChatHistory: (cardId: string) =>
+    request<AiChatMessage[]>(`/cards/${cardId}/chat-history`),
+
+  appendChatMessage: (cardId: string, role: 'user' | 'assistant', content: string) =>
+    request<{ ok: boolean }>(`/cards/${cardId}/chat-history`, {
+      method: 'POST',
+      body: JSON.stringify({ role, content }),
+    }),
 };
 
 // ─── Labels ───────────────────────────────────────────────────────────────────
