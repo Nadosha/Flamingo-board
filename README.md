@@ -2,6 +2,8 @@
 
 A real-time collaborative Kanban board built with **Next.js 16**, **NestJS**, **MongoDB**, and **TypeScript**. Create workspaces, invite teammates, manage boards with drag-and-drop columns and cards, and see who's online — all in real time.
 
+Includes a suite of **GPT-powered AI agents**: auto-prioritize your board by urgency, decompose vague tasks into concrete subtasks, generate a Slack-ready async standup in one click, and chat with an AI assistant scoped to any individual card — all without leaving the board.
+
 ## Features
 
 - **Workspaces** — organize boards by team or project, invite members via shareable links
