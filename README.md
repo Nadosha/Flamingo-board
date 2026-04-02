@@ -1,4 +1,4 @@
-# 🦩 Flamingo Board
+# 🦩 HolyMoly Board
 
 A real-time collaborative Kanban board built with **Next.js 16**, **NestJS**, **MongoDB**, and **TypeScript**. Create workspaces, invite teammates, manage boards with drag-and-drop columns and cards, and see who's online — all in real time.
 
@@ -66,8 +66,8 @@ A real-time collaborative Kanban board built with **Next.js 16**, **NestJS**, **
 ### Run with Docker (recommended)
 
 ```bash
-git clone git@github.com:Nadosha/Flamingo-board.git
-cd Flamingo-board
+git clone git@github.com:Nadosha/HolyMoly-board.git
+cd HolyMoly-board
 docker compose up --build -d
 ```
 
