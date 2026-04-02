@@ -24,6 +24,7 @@ export async function updateCardAction(
     column_id?: string;
     position?: number;
     due_date?: string | null;
+    priority?: 'low' | 'medium' | 'high' | null;
   },
 ) {
   try {

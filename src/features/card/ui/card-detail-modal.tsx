@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
-import { Calendar, Trash2, MessageSquare, Eye, Pencil, Plus, X } from 'lucide-react';
+import { Calendar, Trash2, MessageSquare, Eye, Pencil, Plus, X, ChevronDown } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
@@ -31,6 +31,7 @@ import {
   getBoardLabelsAction,
   createLabelAction,
 } from '@/entities/card/actions';
+import { CardAiChat } from '@/features/ai/ui/card-ai-chat';
 import { formatRelativeTime, getInitials } from '@/shared/lib/utils';
 
 type BoardMember = { user_id: string; profile: { id: string; full_name: string | null; avatar_url: string | null } | null };
@@ -44,6 +45,7 @@ interface Props {
   boardId: string;
   onClose: () => void;
   onCardDeleted: (cardId: string) => void;
+  onBoardRefresh?: () => void;
 }
 
 type CardDetail = {
@@ -51,6 +53,7 @@ type CardDetail = {
   column_id: string;
   title: string;
   description: string | null;
+  priority: 'low' | 'medium' | 'high' | null;
   position: number;
   due_date: string | null;
   created_by: string | null;
@@ -61,7 +64,13 @@ type CardDetail = {
   card_activities?: ActivityEntry[];
 };
 
-export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted }: Props) {
+const PRIORITY_CONFIG = {
+  high:   { label: 'High',   dot: 'bg-red-500',    text: 'text-red-600 dark:text-red-400' },
+  medium: { label: 'Medium', dot: 'bg-yellow-400',  text: 'text-yellow-600 dark:text-yellow-400' },
+  low:    { label: 'Low',    dot: 'bg-green-500',   text: 'text-green-600 dark:text-green-400' },
+};
+
+export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted, onBoardRefresh }: Props) {
   const [card, setCard] = useState<CardDetail | null>(null);
   const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
   const [boardLabels, setBoardLabels] = useState<BoardLabel[]>([]);
@@ -83,6 +92,7 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted }: Pro
       assignees: (data as any).assignees ?? [],
       labels: (data as any).labels ?? [],
       card_activities: (data as any).card_activities ?? [],
+      priority: (data as any).priority ?? null,
     };
   }
 
@@ -117,6 +127,14 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted }: Pro
       const due = value || null;
       await updateCardAction(card.id, { due_date: due });
       setCard((prev) => prev ? { ...prev, due_date: due } : prev);
+    });
+  }
+
+  function handleSetPriority(priority: 'low' | 'medium' | 'high' | null) {
+    if (!card) return;
+    startTransition(async () => {
+      await updateCardAction(card.id, { priority });
+      setCard((prev) => prev ? { ...prev, priority } : prev);
     });
   }
 
@@ -202,19 +220,21 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted }: Pro
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="h-full w-full max-w-full md:max-w-2xl md:h-auto md:max-h-[90vh] flex flex-col p-0 md:p-6 gap-0 overflow-y-auto md:overflow-hidden">
+      <DialogContent className="w-full max-w-5xl h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
         {loading || !card ? (
           <div className="p-8 text-center text-muted-foreground">Loading…</div>
         ) : (
-          <>
-            <DialogHeader className="px-4 pt-4 md:px-0 md:pt-0 shrink-0">
+          <div className="flex flex-col h-full min-h-0">
+            <DialogHeader className="px-6 pt-5 pb-3 shrink-0 border-b border-border/60">
               <DialogTitle className="text-lg pr-6">{card.title}</DialogTitle>
             </DialogHeader>
 
-            <div className="flex flex-col md:flex-row gap-4 flex-1 md:overflow-hidden px-4 pb-4 md:px-0 md:pb-0">
-              {/* Main content */}
-              <div className="flex-1 md:overflow-y-auto">
-                <div className="space-y-5 md:pr-2">
+            {/* Three-column layout */}
+            <div className="flex flex-1 min-h-0 overflow-hidden">
+
+              {/* ── Column 1: Main content ──────────────────────────────── */}
+              <div className="flex-1 min-w-0 overflow-y-auto px-6 py-4">
+                <div className="space-y-5 max-w-prose">
                   {/* Description */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -296,8 +316,50 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted }: Pro
                 </div>
               </div>
 
-              {/* Right sidebar */}
-              <div className="w-full md:w-44 flex-shrink-0 space-y-4 md:overflow-y-auto text-sm">
+              {/* ── Column 2: Metadata sidebar ──────────────────────────── */}
+              <div className="w-44 flex-shrink-0 border-l border-border/60 overflow-y-auto px-4 py-4 space-y-4 text-sm">
+
+                {/* Priority */}
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Priority</p>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 border border-input bg-background hover:bg-secondary transition-colors text-xs">
+                        {card.priority ? (
+                          <>
+                            <span className={`h-2 w-2 rounded-full ${PRIORITY_CONFIG[card.priority].dot}`} />
+                            <span className={PRIORITY_CONFIG[card.priority].text}>{PRIORITY_CONFIG[card.priority].label}</span>
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground">No priority</span>
+                        )}
+                        <ChevronDown className="h-3 w-3 ml-auto text-muted-foreground" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-36 p-1" align="start">
+                      {(['high', 'medium', 'low'] as const).map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => handleSetPriority(p)}
+                          className="w-full flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs hover:bg-accent transition-colors"
+                        >
+                          <span className={`h-2 w-2 rounded-full ${PRIORITY_CONFIG[p].dot}`} />
+                          {PRIORITY_CONFIG[p].label}
+                        </button>
+                      ))}
+                      {card.priority && (
+                        <button
+                          onClick={() => handleSetPriority(null)}
+                          className="w-full flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs hover:bg-accent transition-colors text-muted-foreground border-t border-border/40 mt-1 pt-1.5"
+                        >
+                          <X className="h-3 w-3" /> Clear
+                        </button>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <Separator />
 
                 {/* Due Date */}
                 <div>
@@ -341,7 +403,6 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted }: Pro
                         </button>
                       </div>
                     ))}
-
                     {boardMembers.filter((m) => !card.assignees.some((a) => a.user_id === m.user_id)).length > 0 && (
                       <Popover>
                         <PopoverTrigger asChild>
@@ -387,7 +448,6 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted }: Pro
                         </button>
                       </div>
                     ))}
-
                     <Popover onOpenChange={(open) => { if (!open) { setCreatingLabel(false); setNewLabelName(''); } }}>
                       <PopoverTrigger asChild>
                         <button className="w-full text-left text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-secondary transition-colors">
@@ -462,11 +522,20 @@ export function CardDetailModal({ cardId, boardId, onClose, onCardDeleted }: Pro
                   Delete card
                 </Button>
               </div>
+
+              {/* ── Column 3: AI Chat ───────────────────────────────────── */}
+              <div className="w-80 flex-shrink-0 border-l border-border/60 flex flex-col min-h-0">
+                <CardAiChat
+                  cardId={cardId}
+                  onPriorityApplied={(p) => setCard((prev) => prev ? { ...prev, priority: p as any } : prev)}
+                  onCardsCreated={() => onBoardRefresh?.()}
+                />
+              </div>
+
             </div>
-          </>
+          </div>
         )}
       </DialogContent>
     </Dialog>
   );
 }
-

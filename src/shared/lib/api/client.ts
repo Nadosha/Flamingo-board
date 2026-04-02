@@ -150,7 +150,7 @@ export const cardsApi = {
   get: (id: string) =>
     request<any>(`/cards/${id}`),
 
-  update: (id: string, updates: { title?: string; description?: string; column_id?: string; position?: number; due_date?: string | null }) =>
+  update: (id: string, updates: { title?: string; description?: string; column_id?: string; position?: number; due_date?: string | null; priority?: 'low' | 'medium' | 'high' | null }) =>
     request<Card>(`/cards/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }),
 
   move: (cardId: string, targetColumnId: string, targetPosition: number, sourceColumnId: string) =>
@@ -192,4 +192,49 @@ export const labelsApi = {
 
   delete: (id: string) =>
     request(`/labels/${id}`, { method: 'DELETE' }),
+};
+
+// ─── AI ────────────────────────────────────────────────────────────────────────
+
+export const aiApi = {
+  prioritize: (boardId: string) =>
+    request<{
+      rankedCards: Array<{ title: string; reasoning: string; score: number; card: any }>;
+      summary: string;
+    }>(`/ai/boards/${boardId}/prioritize`, { method: 'POST' }),
+
+  decompose: (
+    cardId: string,
+    opts: { clarificationAnswer?: string; createCards?: boolean },
+  ) =>
+    request<{
+      needsClarification?: boolean;
+      question?: string;
+      subtasks?: string[];
+      createdCardIds?: string[];
+    }>(`/ai/cards/${cardId}/decompose`, {
+      method: 'POST',
+      body: JSON.stringify(opts),
+    }),
+
+  standup: (boardId: string) =>
+    request<{ message: string; blockers: Array<{ title: string }> }>(
+      `/ai/boards/${boardId}/standup`,
+      { method: 'POST' },
+    ),
+
+  cardChat: (
+    cardId: string,
+    message: string,
+    history: Array<{ role: 'user' | 'assistant'; content: string }>,
+  ) =>
+    request<{
+      reply: string;
+      action: string | null;
+      createdCardIds: string[];
+      appliedPriority: string | null;
+    }>(`/ai/cards/${cardId}/chat`, {
+      method: 'POST',
+      body: JSON.stringify({ message, history }),
+    }),
 };

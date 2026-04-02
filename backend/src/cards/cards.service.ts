@@ -44,6 +44,7 @@ export class CardsService {
       title: dto.title,
       position: dto.position,
       created_by: new Types.ObjectId(userId),
+      ...(dto.priority ? { priority: dto.priority } : {}),
     });
 
     await this.activityModel.create({
@@ -394,6 +395,7 @@ export class CardsService {
           color: l.color,
         },
       })),
+      priority: card.priority ?? null,
     };
   }
 }

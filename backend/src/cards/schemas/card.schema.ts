@@ -30,6 +30,9 @@ export class Card {
   // Embedded label ids
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Label' }], default: [] })
   label_ids: Types.ObjectId[];
+
+  @Prop({ type: String, enum: ['low', 'medium', 'high'], default: null })
+  priority: 'low' | 'medium' | 'high' | null;
 }
 
 export const CardSchema = SchemaFactory.createForClass(Card);

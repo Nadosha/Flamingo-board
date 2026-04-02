@@ -394,6 +394,7 @@ export function BoardView({ initialBoard }: Props) {
           boardId={board.id}
           onClose={() => setSelectedCardId(null)}
           onCardDeleted={handleCardDeleted}
+          onBoardRefresh={() => { /* WebSocket handles refresh automatically */ }}
         />
       )}
     </div>

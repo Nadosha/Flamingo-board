@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, IsDateString } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsEnum } from 'class-validator';
 
 export class CreateCardDto {
   @IsString()
@@ -9,6 +9,10 @@ export class CreateCardDto {
 
   @IsNumber()
   position: number;
+
+  @IsOptional()
+  @IsEnum(['low', 'medium', 'high'])
+  priority?: 'low' | 'medium' | 'high';
 }
 
 export class UpdateCardDto {
@@ -30,6 +34,10 @@ export class UpdateCardDto {
 
   @IsOptional()
   due_date?: string | null;
+
+  @IsOptional()
+  @IsEnum(['low', 'medium', 'high', null])
+  priority?: 'low' | 'medium' | 'high' | null;
 }
 
 export class MoveCardDto {

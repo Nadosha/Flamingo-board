@@ -4,6 +4,12 @@ import { useState, useTransition } from 'react';
 import { createPortal } from 'react-dom';
 import { Draggable } from '@hello-pangea/dnd';
 import { Calendar, Trash2 } from 'lucide-react';
+
+const PRIORITY_DOT: Record<string, string> = {
+  high: 'bg-red-500',
+  medium: 'bg-yellow-400',
+  low: 'bg-green-500',
+};
 import { cn, formatDate } from '@/shared/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import {
@@ -80,6 +86,14 @@ export function CardItem({ card, index, onClick, onDeleted }: Props) {
           )}
 
           <p className="font-medium leading-snug pr-5">{card.title}</p>
+
+          {/* Priority dot */}
+          {card.priority && (
+            <div className="flex items-center gap-1 mt-1.5">
+              <span className={`inline-block h-2 w-2 rounded-full ${PRIORITY_DOT[card.priority]}`} />
+              <span className="text-xs text-muted-foreground capitalize">{card.priority}</span>
+            </div>
+          )}
 
           {/* Footer */}
           <div className="flex items-center justify-between mt-2 gap-1">

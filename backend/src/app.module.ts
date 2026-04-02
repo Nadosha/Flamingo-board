@@ -9,6 +9,7 @@ import { ColumnsModule } from './columns/columns.module';
 import { CardsModule } from './cards/cards.module';
 import { LabelsModule } from './labels/labels.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     CardsModule,
     LabelsModule,
     RealtimeModule,
+    AiModule,
   ],
 })
 export class AppModule {}

@@ -9,6 +9,7 @@ A real-time collaborative Kanban board built with **Next.js 16**, **NestJS**, **
 - **Card details** — descriptions (Markdown), labels, assignees, comments, due dates
 - **Real-time collaboration** — live board updates and presence indicators via Socket.IO
 - **Auth** — email/password registration and login with JWT session persistence
+- **AI Agents** — GPT-powered prioritization, task decomposition, async standup generation, and in-card AI chat
 
 ## Tech Stack
 
@@ -114,6 +115,26 @@ Open [http://localhost:3000](http://localhost:3000).
 | `JWT_EXPIRES_IN` | `7d`                             | Token expiration                 |
 | `FRONTEND_URL`   | `http://localhost:3000`          | Allowed CORS origin              |
 | `PORT`           | `4000`                           | Backend server port              |
+| `OPENAI_API_KEY` | —                                | OpenAI API key (required for AI) |
+| `OPENAI_MODEL`   | `gpt-4o-mini`                    | OpenAI model name                |
+
+---
+
+## AI Features
+
+Three GPT-powered agents are exposed under `/api/ai/*` (all JWT-protected):
+
+| Agent | Endpoint | Description |
+|---|---|---|
+| **Prioritizer** | `POST /ai/boards/:id/prioritize` | Scores every open card (priority weight + age + overdue penalty) and returns a ranked list with one-line reasoning per card |
+| **Decomposer** | `POST /ai/cards/:id/decompose` | Checks a card for clarity, asks a clarifying question if needed, or breaks it into 2–5 concrete sub-tasks and optionally creates them on the board |
+| **Standup** | `POST /ai/boards/:id/standup` | Reads done/in-progress/blocked cards and generates a Slack-style async standup message |
+| **Card Chat** | `POST /ai/cards/:id/chat` | Contextual chat scoped to a single card; can execute `createSubtasks` or `setPriority` actions inline |
+
+### Using AI in the UI
+
+- **Card modal** — open any card; the right-hand column is the AI chat panel. Use quick chips or type freely.
+- **Board header** — click **AI Assist ▾** → *Prioritize day* or *Generate standup* to open side panels.
 
 ---
 
@@ -147,6 +168,7 @@ npm run test:watch
 .
 ├── backend/                    # NestJS API
 │   └── src/
+│       ├── ai/                 # AI agents (NestJS module, service, controller)
 │       ├── auth/               # JWT auth (register, login, logout)
 │       ├── boards/             # Boards CRUD
 │       ├── cards/              # Cards CRUD + assignees, labels, comments
@@ -163,6 +185,7 @@ npm run test:watch
 │   │   ├── column/
 │   │   └── workspace/
 │   ├── features/               # User-facing feature modules
+│   │   ├── ai/                 # AI agents: actions.ts + UI panels
 │   │   ├── auth/
 │   │   ├── card/
 │   │   ├── column/
