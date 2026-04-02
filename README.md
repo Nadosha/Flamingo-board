@@ -224,3 +224,103 @@ The NestJS `RealtimeGateway` manages a `/realtime` Socket.IO namespace. Clients 
 ### JWT Auth
 
 Auth is stateless — the backend issues a JWT on login which is stored as an `httpOnly` cookie by the Next.js server action. The Next.js middleware checks for this cookie to protect routes. The NestJS backend validates the JWT via `JwtAuthGuard` on every protected endpoint.
+
+---
+
+## Mock Data & Test Scenario
+
+### Seeding the database
+
+The repo ships a seed script that populates MongoDB with a realistic sprint — two users, one workspace, a board with 10 cards across 4 columns (different priorities, labels, assignees, 2 overdue cards), and activity history.
+
+```bash
+# via Docker Compose (recommended)
+docker compose exec backend node seed.js
+
+# or locally (MongoDB on localhost:27017)
+cd backend && node seed.js
+# equivalent shortcut
+cd backend && npm run seed
+```
+
+The script is **idempotent** — re-running it prints a warning and exits without inserting duplicates. To reset, drop the `holymoly` database and run again.
+
+**Credentials after seeding:**
+
+| User | Password | Role |
+|------|----------|------|
+| `alex.morgan@devlog.io` | `Demo1234!` | Workspace owner |
+| `sarah.chen@devlog.io` | `Demo1234!` | Workspace member |
+
+**Board state:**
+
+| Column | Cards | Notes |
+|--------|-------|-------|
+| Backlog | 3 | priorities: high / medium / low |
+| In Progress | 3 | 2 cards are **overdue** (due yesterday), both high priority |
+| Review / QA | 2 | medium + low |
+| Done | 2 | closed items, no priority set |
+
+---
+
+### Test Scenario
+
+#### Block 1 — Auth & Workspace
+
+| # | Action | Expected result |
+|---|--------|-----------------|
+| 1.1 | Go to [http://localhost:3000](http://localhost:3000) and log in as `alex.morgan@devlog.io` / `Demo1234!` | Redirected to `/workspaces`; tile **"Acme Dev Team"** is visible |
+| 1.2 | Open the workspace | Left sidebar shows board **"DevLog — Sprint 1"** |
+| 1.3 | Open the board | 4 columns: Backlog (3) · In Progress (3) · Review / QA (2) · Done (2) |
+
+#### Block 2 — Priority badges & card detail
+
+| # | Action | Expected result |
+|---|--------|-----------------|
+| 2.1 | Look at the **In Progress** column | Cards **"Build AI task prioritization agent"** and **"Fix drag-and-drop on mobile Safari"** show a red dot (high) + **Overdue** badge |
+| 2.2 | Click **"Build AI task prioritization agent"** | 3-column modal: description · metadata sidebar · AI chat panel |
+| 2.3 | In metadata sidebar, change priority to **Medium** | Dot changes red → yellow; card updates live via WebSocket |
+| 2.4 | Revert priority to **High** | Red dot returns |
+| 2.5 | Drag **"Implement card search & keyword filter"** into **Review / QA** | Card moves instantly; all positions update |
+
+#### Block 3 — Real-time collaboration
+
+| # | Action | Expected result |
+|---|--------|-----------------|
+| 3.1 | Open the same board in a **second browser tab** | Both tabs show Alex's avatar in the board header (presence indicator) |
+| 3.2 | In tab 1, drag any card to another column | Tab 2 updates **without page reload** |
+| 3.3 | In tab 1, add a comment to a card | Tab 2 board refreshes (Socket.IO `board-update` fires) |
+
+#### Block 4 — AI chat (inside card)
+
+| # | Action | Expected result |
+|---|--------|-----------------|
+| 4.1 | Open **"Build AI task prioritization agent"** | Right panel shows 4 quick chips: *Generate subtasks · Suggest priority · Write standup update · Spot risks* |
+| 4.2 | Click **"Generate subtasks"** | AI returns 3–5 subtask titles; **"Create subtasks on board"** button appears below the message |
+| 4.3 | Click **"Create subtasks on board"** | New cards appear in the same column; board refreshes live |
+| 4.4 | Click **"Suggest priority"** | AI recommends a priority with one-sentence reasoning based on card description |
+| 4.5 | Type `"What are the main risks of this task?"` and press Enter | Context-specific response mentioning overdue status, streaming complexity, error handling |
+
+#### Block 5 — AI Assist board-level panels
+
+| # | Action | Expected result |
+|---|--------|-----------------|
+| 5.1 | Click **"AI Assist ▾"** in the board header | Dropdown: **Prioritize day** and **Generate standup** |
+| 5.2 | **Prioritize day** → **Analyze board** button | Ranked list appears; overdue high-priority cards occupy positions 1–2 with reasoning |
+| 5.3 | **Generate standup** → **Generate standup** button | Slack-style message: ✅ Done · 🔄 In Progress · 🚨 Blockers (2 overdue cards listed) |
+| 5.4 | **Copy to clipboard** | Message copied; paste into any editor to verify content |
+
+#### Block 6 — Comments & activity log
+
+| # | Action | Expected result |
+|---|--------|-----------------|
+| 6.1 | Open **"Fix drag-and-drop on mobile Safari"** | Activity log shows Sarah's seeded comment: *"Reproduced on iPhone 13 (Safari 17.4)…"* |
+| 6.2 | Type `"PR up for review"` and submit | Comment appears at top of activity feed with Alex's name and timestamp |
+
+#### Block 7 — Invite flow
+
+| # | Action | Expected result |
+|---|--------|-----------------|
+| 7.1 | In workspace settings click **Invite member** and copy the link | URL of the form `/invite/[token]` |
+| 7.2 | Open the link in an **incognito window** | Registration page pre-scoped to the workspace invite |
+| 7.3 | Register a new account | Auto-added to **Acme Dev Team** as member; redirected to workspace |
