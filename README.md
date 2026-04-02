@@ -55,6 +55,23 @@ Includes a suite of **GPT-powered AI agents**: auto-prioritize your board by urg
 | **Bonus**                  |                                                                  |         |
 | 18                         | Markdown editor in card detail                                   | ✅ Done |
 | 19                         | Filter cards by assignee/label/due date                          | ✅ Done |
+| **ТЗ — Базовий трекер**    |                                                                  |         |
+| T1                         | CRUD для задач: title, description, status (todo/in-progress/done), priority (low/medium/high), createdAt | ✅ Done |
+| T2                         | Список задач із фільтрацією за статусом і сортуванням за пріоритетом / датою | ✅ Done |
+| T3                         | Зберігання між перезавантаженнями; вибір БД пояснено в README    | ✅ Done (MongoDB) |
+| **ТЗ — AI-агенти**         |                                                                  |         |
+| A                          | Агент пріоритизації: scoring pre-pass (вік + overdue + priority weight) → GPT ranks + reasoning | ✅ Done |
+| B                          | Декомпозиція задачі: clarity check → subtasks → auto-create в board | ✅ Done |
+| C                          | Генератор статус-апдейту: Slack-style async standup (✅ Done / 🔄 In Progress / 🚨 Blockers) | ✅ Done |
+| D                          | Власна ідея: Card Chat — контекстний AI-чат у картці з виконанням дій (createSubtasks, setPriority) | ✅ Done |
+| **ТЗ — Coding agent**      |                                                                  |         |
+| CA1                        | UI scaffolded агентом (GitHub Copilot); компоненти, лейаут, стилізація | ✅ Done |
+| CA2                        | AGENT_LOG.md: які задачі давав агенту, де допоміг, де переробляв | ✅ Done |
+| **ТЗ — Здача**             |                                                                  |         |
+| D1                         | Публічний GitHub репо                                            | ✅ Done |
+| D2                         | README з інструкцією запуску та описом архітектури               | ✅ Done |
+| D3                         | `.env.example` (root + backend) з усіма змінними без реальних значень | ✅ Done |
+| D4                         | Локальний запуск: `docker compose up --build -d` або `npm install && npm run dev` | ✅ Done |
 
 ---
 
