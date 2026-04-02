@@ -2,12 +2,12 @@
  * Base fetch wrapper for HolyMoly REST API.
  * Sends cookies with every request (credentials: 'include').
  */
-import type { Card, Column, AiChatMessage } from '@/shared/types';
+import type { Card, Column, AiChatMessage } from "@/shared/types";
 
 const API_BASE =
-  (typeof window === 'undefined'
+  (typeof window === "undefined"
     ? process.env.BACKEND_INTERNAL_URL
-    : process.env.NEXT_PUBLIC_API_URL) ?? 'http://localhost:4000/api';
+    : process.env.NEXT_PUBLIC_API_URL) ?? "http://localhost:4000/api";
 
 export class ApiError extends Error {
   constructor(
@@ -15,17 +15,17 @@ export class ApiError extends Error {
     message: string,
   ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 }
 
 async function getServerCookieHeader(): Promise<Record<string, string>> {
-  if (typeof window !== 'undefined') return {};
+  if (typeof window !== "undefined") return {};
   try {
     // Dynamic import to avoid including next/headers in client bundle
-    const { cookies } = await import('next/headers');
+    const { cookies } = await import("next/headers");
     const store = await cookies();
-    const token = store.get('token')?.value;
+    const token = store.get("token")?.value;
     if (token) return { Cookie: `token=${token}` };
   } catch {
     // Not in a request context (e.g., during build)
@@ -33,17 +33,14 @@ async function getServerCookieHeader(): Promise<Record<string, string>> {
   return {};
 }
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE}${path}`;
   const serverCookies = await getServerCookieHeader();
   const res = await fetch(url, {
     ...options,
-    credentials: 'include',
+    credentials: "include",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...serverCookies,
       ...(options.headers ?? {}),
     },
@@ -68,127 +65,225 @@ async function request<T>(
 
 export const authApi = {
   login: (email: string, password: string) =>
-    request<{ message: string; token: string }>('/auth/login', {
-      method: 'POST',
+    request<{ message: string; token: string }>("/auth/login", {
+      method: "POST",
       body: JSON.stringify({ email, password }),
     }),
 
   register: (email: string, password: string, full_name: string) =>
-    request<{ message: string; token: string }>('/auth/register', {
-      method: 'POST',
+    request<{ message: string; token: string }>("/auth/register", {
+      method: "POST",
       body: JSON.stringify({ email, password, full_name }),
     }),
 
-  logout: () => request('/auth/logout', { method: 'POST' }),
+  logout: () => request("/auth/logout", { method: "POST" }),
 
-  me: () => request<{ id: string; email: string; full_name: string | null; avatar_url: string | null }>('/auth/me'),
+  me: () =>
+    request<{
+      id: string;
+      email: string;
+      full_name: string | null;
+      avatar_url: string | null;
+    }>("/auth/me"),
 };
 
 // ─── Workspaces ──────────────────────────────────────────────────────────────
 
 export const workspacesApi = {
   list: () =>
-    request<Array<{ role: string; workspace: { id: string; name: string; slug: string; owner_id: string; created_at: string } | null }>>('/workspaces'),
+    request<
+      Array<{
+        role: string;
+        workspace: {
+          id: string;
+          name: string;
+          slug: string;
+          owner_id: string;
+          created_at: string;
+        } | null;
+      }>
+    >("/workspaces"),
 
   create: (name: string) =>
-    request('/workspaces', { method: 'POST', body: JSON.stringify({ name }) }),
+    request("/workspaces", { method: "POST", body: JSON.stringify({ name }) }),
 
-  delete: (id: string) =>
-    request(`/workspaces/${id}`, { method: 'DELETE' }),
+  delete: (id: string) => request(`/workspaces/${id}`, { method: "DELETE" }),
 
   createInvite: (workspaceId: string) =>
-    request<{ url: string; token: string }>(`/workspaces/${workspaceId}/invite`, { method: 'POST' }),
+    request<{ url: string; token: string }>(
+      `/workspaces/${workspaceId}/invite`,
+      { method: "POST" },
+    ),
 
   acceptInvite: (token: string) =>
-    request<{ workspace_id: string }>(`/workspaces/invites/${token}/accept`, { method: 'POST' }),
+    request<{ workspace_id: string }>(`/workspaces/invites/${token}/accept`, {
+      method: "POST",
+    }),
 };
 
 // ─── Boards ───────────────────────────────────────────────────────────────────
 
 export const boardsApi = {
   list: (workspaceId: string) =>
-    request<Array<{ id: string; name: string; workspace_id: string; color: string; description: string | null; created_by: string | null; created_at: string }>>(`/boards?workspace_id=${workspaceId}`),
+    request<
+      Array<{
+        id: string;
+        name: string;
+        workspace_id: string;
+        color: string;
+        description: string | null;
+        created_by: string | null;
+        created_at: string;
+      }>
+    >(`/boards?workspace_id=${workspaceId}`),
 
-  create: (data: { name: string; workspace_id: string; color?: string; description?: string }) =>
-    request('/boards', { method: 'POST', body: JSON.stringify(data) }),
+  create: (data: {
+    name: string;
+    workspace_id: string;
+    color?: string;
+    description?: string;
+  }) => request("/boards", { method: "POST", body: JSON.stringify(data) }),
 
-  delete: (id: string) =>
-    request(`/boards/${id}`, { method: 'DELETE' }),
+  delete: (id: string) => request(`/boards/${id}`, { method: "DELETE" }),
 
-  getWithColumns: (boardId: string) =>
-    request<any>(`/boards/${boardId}`),
+  getWithColumns: (boardId: string) => request<any>(`/boards/${boardId}`),
 
   getMembers: (boardId: string) =>
-    request<Array<{ user_id: string; role: string; profile: { id: string; full_name: string | null; avatar_url: string | null } | null }>>(`/boards/${boardId}/members`),
+    request<
+      Array<{
+        user_id: string;
+        role: string;
+        profile: {
+          id: string;
+          full_name: string | null;
+          avatar_url: string | null;
+        } | null;
+      }>
+    >(`/boards/${boardId}/members`),
 
   getLabels: (boardId: string) =>
-    request<Array<{ id: string; name: string; color: string }>>(`/boards/${boardId}/labels`),
+    request<Array<{ id: string; name: string; color: string }>>(
+      `/boards/${boardId}/labels`,
+    ),
 };
 
 // ─── Columns ──────────────────────────────────────────────────────────────────
 
 export const columnsApi = {
   create: (boardId: string, name: string, position: number) =>
-    request<Column>('/columns', { method: 'POST', body: JSON.stringify({ board_id: boardId, name, position }) }),
+    request<Column>("/columns", {
+      method: "POST",
+      body: JSON.stringify({ board_id: boardId, name, position }),
+    }),
 
   update: (id: string, updates: { name?: string; position?: number }) =>
-    request(`/columns/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }),
+    request(`/columns/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    }),
 
-  delete: (id: string) =>
-    request(`/columns/${id}`, { method: 'DELETE' }),
+  delete: (id: string) => request(`/columns/${id}`, { method: "DELETE" }),
 
-  reorder: (updates: Array<{ id: string; position: number }>, boardId?: string) =>
-    request('/columns/reorder', { method: 'PATCH', body: JSON.stringify({ updates, board_id: boardId }) }),
+  reorder: (
+    updates: Array<{ id: string; position: number }>,
+    boardId?: string,
+  ) =>
+    request("/columns/reorder", {
+      method: "PATCH",
+      body: JSON.stringify({ updates, board_id: boardId }),
+    }),
 };
 
 // ─── Cards ────────────────────────────────────────────────────────────────────
 
 export const cardsApi = {
   create: (columnId: string, title: string, position: number) =>
-    request<Card>('/cards', { method: 'POST', body: JSON.stringify({ column_id: columnId, title, position }) }),
-
-  get: (id: string) =>
-    request<any>(`/cards/${id}`),
-
-  update: (id: string, updates: { title?: string; description?: string; column_id?: string; position?: number; due_date?: string | null; priority?: 'low' | 'medium' | 'high' | null }) =>
-    request<Card>(`/cards/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }),
-
-  move: (cardId: string, targetColumnId: string, targetPosition: number, sourceColumnId: string) =>
-    request(`/cards/${cardId}/move`, {
-      method: 'PATCH',
-      body: JSON.stringify({ target_column_id: targetColumnId, target_position: targetPosition, source_column_id: sourceColumnId }),
+    request<Card>("/cards", {
+      method: "POST",
+      body: JSON.stringify({ column_id: columnId, title, position }),
     }),
 
-  delete: (id: string) =>
-    request(`/cards/${id}`, { method: 'DELETE' }),
+  get: (id: string) => request<any>(`/cards/${id}`),
 
-  reorder: (updates: Array<{ id: string; position: number; column_id: string }>, boardId?: string) =>
-    request('/cards/reorder', { method: 'PATCH', body: JSON.stringify({ updates, board_id: boardId }) }),
+  update: (
+    id: string,
+    updates: {
+      title?: string;
+      description?: string;
+      column_id?: string;
+      position?: number;
+      due_date?: string | null;
+      priority?: "low" | "medium" | "high" | null;
+    },
+  ) =>
+    request<Card>(`/cards/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    }),
+
+  move: (
+    cardId: string,
+    targetColumnId: string,
+    targetPosition: number,
+    sourceColumnId: string,
+  ) =>
+    request(`/cards/${cardId}/move`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        target_column_id: targetColumnId,
+        target_position: targetPosition,
+        source_column_id: sourceColumnId,
+      }),
+    }),
+
+  delete: (id: string) => request(`/cards/${id}`, { method: "DELETE" }),
+
+  reorder: (
+    updates: Array<{ id: string; position: number; column_id: string }>,
+    boardId?: string,
+  ) =>
+    request("/cards/reorder", {
+      method: "PATCH",
+      body: JSON.stringify({ updates, board_id: boardId }),
+    }),
 
   addComment: (cardId: string, content: string) =>
-    request(`/cards/${cardId}/comments`, { method: 'POST', body: JSON.stringify({ content }) }),
+    request(`/cards/${cardId}/comments`, {
+      method: "POST",
+      body: JSON.stringify({ content }),
+    }),
 
   addAssignee: (cardId: string, userId: string) =>
-    request(`/cards/${cardId}/assignees`, { method: 'POST', body: JSON.stringify({ user_id: userId }) }),
+    request(`/cards/${cardId}/assignees`, {
+      method: "POST",
+      body: JSON.stringify({ user_id: userId }),
+    }),
 
   removeAssignee: (cardId: string, userId: string) =>
-    request(`/cards/${cardId}/assignees/${userId}`, { method: 'DELETE' }),
+    request(`/cards/${cardId}/assignees/${userId}`, { method: "DELETE" }),
 
   addLabel: (cardId: string, labelId: string) =>
-    request(`/cards/${cardId}/labels`, { method: 'POST', body: JSON.stringify({ label_id: labelId }) }),
+    request(`/cards/${cardId}/labels`, {
+      method: "POST",
+      body: JSON.stringify({ label_id: labelId }),
+    }),
 
   removeLabel: (cardId: string, labelId: string) =>
-    request(`/cards/${cardId}/labels/${labelId}`, { method: 'DELETE' }),
+    request(`/cards/${cardId}/labels/${labelId}`, { method: "DELETE" }),
 
   toggleSubtask: (cardId: string, index: number) =>
-    request(`/cards/${cardId}/subtasks/${index}/toggle`, { method: 'PATCH' }),
+    request(`/cards/${cardId}/subtasks/${index}/toggle`, { method: "PATCH" }),
 
   getChatHistory: (cardId: string) =>
     request<AiChatMessage[]>(`/cards/${cardId}/chat-history`),
 
-  appendChatMessage: (cardId: string, role: 'user' | 'assistant', content: string) =>
+  appendChatMessage: (
+    cardId: string,
+    role: "user" | "assistant",
+    content: string,
+  ) =>
     request<{ ok: boolean }>(`/cards/${cardId}/chat-history`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ role, content }),
     }),
 };
@@ -197,13 +292,17 @@ export const cardsApi = {
 
 export const labelsApi = {
   getByWorkspace: (workspaceId: string) =>
-    request<Array<{ id: string; name: string; color: string }>>(`/labels?workspace_id=${workspaceId}`),
+    request<Array<{ id: string; name: string; color: string }>>(
+      `/labels?workspace_id=${workspaceId}`,
+    ),
 
   create: (workspaceId: string, name: string, color: string) =>
-    request<{ id: string; name: string; color: string }>('/labels', { method: 'POST', body: JSON.stringify({ workspace_id: workspaceId, name, color }) }),
+    request<{ id: string; name: string; color: string }>("/labels", {
+      method: "POST",
+      body: JSON.stringify({ workspace_id: workspaceId, name, color }),
+    }),
 
-  delete: (id: string) =>
-    request(`/labels/${id}`, { method: 'DELETE' }),
+  delete: (id: string) => request(`/labels/${id}`, { method: "DELETE" }),
 };
 
 // ─── AI ────────────────────────────────────────────────────────────────────────
@@ -211,9 +310,14 @@ export const labelsApi = {
 export const aiApi = {
   prioritize: (boardId: string) =>
     request<{
-      rankedCards: Array<{ title: string; reasoning: string; score: number; card: any }>;
+      rankedCards: Array<{
+        title: string;
+        reasoning: string;
+        score: number;
+        card: any;
+      }>;
       summary: string;
-    }>(`/ai/boards/${boardId}/prioritize`, { method: 'POST' }),
+    }>(`/ai/boards/${boardId}/prioritize`, { method: "POST" }),
 
   decompose: (
     cardId: string,
@@ -225,20 +329,20 @@ export const aiApi = {
       subtasks?: string[];
       createdCardIds?: string[];
     }>(`/ai/cards/${cardId}/decompose`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(opts),
     }),
 
   standup: (boardId: string) =>
     request<{ message: string; blockers: Array<{ title: string }> }>(
       `/ai/boards/${boardId}/standup`,
-      { method: 'POST' },
+      { method: "POST" },
     ),
 
   cardChat: (
     cardId: string,
     message: string,
-    history: Array<{ role: 'user' | 'assistant'; content: string }>,
+    history: Array<{ role: "user" | "assistant"; content: string }>,
   ) =>
     request<{
       reply: string;
@@ -246,7 +350,7 @@ export const aiApi = {
       createdCardIds: string[];
       appliedPriority: string | null;
     }>(`/ai/cards/${cardId}/chat`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ message, history }),
     }),
 };

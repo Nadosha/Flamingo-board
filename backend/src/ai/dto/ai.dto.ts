@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsBoolean } from "class-validator";
 
 export class DecomposeCardDto {
   @IsOptional()
@@ -15,5 +15,5 @@ export class ChatMessageDto {
   message: string;
 
   @IsOptional()
-  history?: Array<{ role: 'user' | 'assistant'; content: string }>;
+  history?: Array<{ role: "user" | "assistant"; content: string }>;
 }

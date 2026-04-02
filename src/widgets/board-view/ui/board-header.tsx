@@ -33,12 +33,17 @@ function loadCachedResult(boardId: string, key: string) {
 
 function saveCachedResult(boardId: string, key: string, result: any) {
   try {
-    localStorage.setItem(`${key}_${boardId}`, JSON.stringify({ result, ts: Date.now() }));
+    localStorage.setItem(
+      `${key}_${boardId}`,
+      JSON.stringify({ result, ts: Date.now() }),
+    );
   } catch {}
 }
 
 function clearCachedResult(boardId: string, key: string) {
-  try { localStorage.removeItem(`${key}_${boardId}`); } catch {}
+  try {
+    localStorage.removeItem(`${key}_${boardId}`);
+  } catch {}
 }
 
 interface Props {
@@ -49,14 +54,20 @@ interface Props {
 export function BoardHeader({ board, onCardClick }: Props) {
   const [showPrioritize, setShowPrioritize] = useState(false);
   const [showStandup, setShowStandup] = useState(false);
-  const [prioritizeResult, setPrioritizeResult] = useState<{ rankedCards: any[]; summary: string } | null>(null);
-  const [standupResult, setStandupResult] = useState<{ message: string; blockers: Array<{ title: string }> } | null>(null);
+  const [prioritizeResult, setPrioritizeResult] = useState<{
+    rankedCards: any[];
+    summary: string;
+  } | null>(null);
+  const [standupResult, setStandupResult] = useState<{
+    message: string;
+    blockers: Array<{ title: string }>;
+  } | null>(null);
 
   // Load from localStorage on mount
   useEffect(() => {
-    const cached = loadCachedResult(board.id, 'prioritize');
+    const cached = loadCachedResult(board.id, "prioritize");
     if (cached) setPrioritizeResult(cached);
-    const cachedStandup = loadCachedResult(board.id, 'standup');
+    const cachedStandup = loadCachedResult(board.id, "standup");
     if (cachedStandup) setStandupResult(cachedStandup);
   }, [board.id]);
 
@@ -85,18 +96,28 @@ export function BoardHeader({ board, onCardClick }: Props) {
         <div className="ml-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs gap-1.5">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 px-2.5 text-xs gap-1.5"
+              >
                 <Sparkles className="h-3.5 w-3.5 text-violet-500" />
                 AI Assist
                 <ChevronDown className="h-3 w-3 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => setShowPrioritize(true)} className="gap-2 cursor-pointer text-sm">
+              <DropdownMenuItem
+                onClick={() => setShowPrioritize(true)}
+                className="gap-2 cursor-pointer text-sm"
+              >
                 <Sparkles className="h-3.5 w-3.5 text-violet-500" />
                 Prioritize day
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowStandup(true)} className="gap-2 cursor-pointer text-sm">
+              <DropdownMenuItem
+                onClick={() => setShowStandup(true)}
+                className="gap-2 cursor-pointer text-sm"
+              >
                 <Sparkles className="h-3.5 w-3.5 text-violet-500" />
                 Generate standup
               </DropdownMenuItem>
@@ -109,18 +130,33 @@ export function BoardHeader({ board, onCardClick }: Props) {
         boardId={board.id}
         open={showPrioritize}
         onClose={() => setShowPrioritize(false)}
-        onCardClick={(id) => { setShowPrioritize(false); onCardClick?.(id); }}
+        onCardClick={(id) => {
+          setShowPrioritize(false);
+          onCardClick?.(id);
+        }}
         result={prioritizeResult}
-        onResult={(r) => { setPrioritizeResult(r); saveCachedResult(board.id, 'prioritize', r); }}
-        onReanalyze={() => { clearCachedResult(board.id, 'prioritize'); setPrioritizeResult(null); }}
+        onResult={(r) => {
+          setPrioritizeResult(r);
+          saveCachedResult(board.id, "prioritize", r);
+        }}
+        onReanalyze={() => {
+          clearCachedResult(board.id, "prioritize");
+          setPrioritizeResult(null);
+        }}
       />
       <StandupPanel
         boardId={board.id}
         open={showStandup}
         onClose={() => setShowStandup(false)}
         result={standupResult}
-        onResult={(r) => { setStandupResult(r); saveCachedResult(board.id, 'standup', r); }}
-        onRegenerate={() => { clearCachedResult(board.id, 'standup'); setStandupResult(null); }}
+        onResult={(r) => {
+          setStandupResult(r);
+          saveCachedResult(board.id, "standup", r);
+        }}
+        onRegenerate={() => {
+          clearCachedResult(board.id, "standup");
+          setStandupResult(null);
+        }}
       />
     </>
   );

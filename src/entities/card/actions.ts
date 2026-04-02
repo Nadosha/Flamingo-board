@@ -1,6 +1,11 @@
-'use server';
+"use server";
 
-import { cardsApi, boardsApi, labelsApi, ApiError } from '@/shared/lib/api/client';
+import {
+  cardsApi,
+  boardsApi,
+  labelsApi,
+  ApiError,
+} from "@/shared/lib/api/client";
 
 export async function createCardAction(
   columnId: string,
@@ -11,7 +16,8 @@ export async function createCardAction(
     const card = await cardsApi.create(columnId, title, position);
     return { card };
   } catch (err) {
-    const message = err instanceof ApiError ? err.message : 'Failed to create card';
+    const message =
+      err instanceof ApiError ? err.message : "Failed to create card";
     return { error: message };
   }
 }
@@ -24,14 +30,15 @@ export async function updateCardAction(
     column_id?: string;
     position?: number;
     due_date?: string | null;
-    priority?: 'low' | 'medium' | 'high' | null;
+    priority?: "low" | "medium" | "high" | null;
   },
 ) {
   try {
     const card = await cardsApi.update(cardId, updates);
     return { card };
   } catch (err) {
-    const message = err instanceof ApiError ? err.message : 'Failed to update card';
+    const message =
+      err instanceof ApiError ? err.message : "Failed to update card";
     return { error: message };
   }
 }
@@ -67,7 +74,8 @@ export async function deleteCardAction(cardId: string) {
     await cardsApi.delete(cardId);
     return { success: true };
   } catch (err) {
-    const message = err instanceof ApiError ? err.message : 'Failed to delete card';
+    const message =
+      err instanceof ApiError ? err.message : "Failed to delete card";
     return { error: message };
   }
 }
@@ -94,7 +102,8 @@ export async function addCardAssigneeAction(cardId: string, userId: string) {
     await cardsApi.addAssignee(cardId, userId);
     return { success: true };
   } catch (err) {
-    const message = err instanceof ApiError ? err.message : 'Failed to add assignee';
+    const message =
+      err instanceof ApiError ? err.message : "Failed to add assignee";
     return { error: message };
   }
 }
@@ -104,7 +113,8 @@ export async function removeCardAssigneeAction(cardId: string, userId: string) {
     await cardsApi.removeAssignee(cardId, userId);
     return { success: true };
   } catch (err) {
-    const message = err instanceof ApiError ? err.message : 'Failed to remove assignee';
+    const message =
+      err instanceof ApiError ? err.message : "Failed to remove assignee";
     return { error: message };
   }
 }
@@ -114,7 +124,8 @@ export async function addCardLabelAction(cardId: string, labelId: string) {
     await cardsApi.addLabel(cardId, labelId);
     return { success: true };
   } catch (err) {
-    const message = err instanceof ApiError ? err.message : 'Failed to add label';
+    const message =
+      err instanceof ApiError ? err.message : "Failed to add label";
     return { error: message };
   }
 }
@@ -124,7 +135,8 @@ export async function removeCardLabelAction(cardId: string, labelId: string) {
     await cardsApi.removeLabel(cardId, labelId);
     return { success: true };
   } catch (err) {
-    const message = err instanceof ApiError ? err.message : 'Failed to remove label';
+    const message =
+      err instanceof ApiError ? err.message : "Failed to remove label";
     return { error: message };
   }
 }
@@ -140,7 +152,7 @@ export async function getCardChatHistoryAction(cardId: string) {
 
 export async function appendCardChatMessageAction(
   cardId: string,
-  role: 'user' | 'assistant',
+  role: "user" | "assistant",
   content: string,
 ) {
   try {
@@ -167,14 +179,19 @@ export async function getBoardLabelsAction(boardId: string) {
   }
 }
 
-export async function createLabelAction(boardId: string, name: string, color: string) {
+export async function createLabelAction(
+  boardId: string,
+  name: string,
+  color: string,
+) {
   try {
     // We need workspace_id — fetch board first to get it
     const board = await boardsApi.getWithColumns(boardId);
     const label = await labelsApi.create(board.workspace_id, name, color);
     return { label };
   } catch (err) {
-    const message = err instanceof ApiError ? err.message : 'Failed to create label';
+    const message =
+      err instanceof ApiError ? err.message : "Failed to create label";
     return { error: message };
   }
 }
@@ -184,7 +201,8 @@ export async function deleteLabelAction(labelId: string) {
     await labelsApi.delete(labelId);
     return { success: true };
   } catch (err) {
-    const message = err instanceof ApiError ? err.message : 'Failed to delete label';
+    const message =
+      err instanceof ApiError ? err.message : "Failed to delete label";
     return { error: message };
   }
 }
@@ -194,7 +212,8 @@ export async function addCommentAction(cardId: string, content: string) {
     await cardsApi.addComment(cardId, content);
     return { success: true };
   } catch (err) {
-    const message = err instanceof ApiError ? err.message : 'Failed to add comment';
+    const message =
+      err instanceof ApiError ? err.message : "Failed to add comment";
     return { error: message };
   }
 }

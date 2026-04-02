@@ -1,5 +1,14 @@
-import { IsString, IsNumber, IsOptional, IsEnum, IsArray, ValidateNested, IsMongoId, IsBoolean } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  ValidateNested,
+  IsMongoId,
+  IsBoolean,
+} from "class-validator";
+import { Type } from "class-transformer";
 
 export class SubtaskDto {
   @IsString()
@@ -10,8 +19,8 @@ export class SubtaskDto {
 }
 
 export class AppendChatMessageDto {
-  @IsEnum(['user', 'assistant'])
-  role: 'user' | 'assistant';
+  @IsEnum(["user", "assistant"])
+  role: "user" | "assistant";
 
   @IsString()
   content: string;
@@ -28,8 +37,8 @@ export class CreateCardDto {
   position: number;
 
   @IsOptional()
-  @IsEnum(['low', 'medium', 'high'])
-  priority?: 'low' | 'medium' | 'high';
+  @IsEnum(["low", "medium", "high"])
+  priority?: "low" | "medium" | "high";
 }
 
 export class UpdateCardDto {
@@ -53,8 +62,8 @@ export class UpdateCardDto {
   due_date?: string | null;
 
   @IsOptional()
-  @IsEnum(['low', 'medium', 'high', null])
-  priority?: 'low' | 'medium' | 'high' | null;
+  @IsEnum(["low", "medium", "high", null])
+  priority?: "low" | "medium" | "high" | null;
 
   @IsOptional()
   @IsArray()

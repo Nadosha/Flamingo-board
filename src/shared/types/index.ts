@@ -20,7 +20,7 @@ export interface WorkspaceMember {
   id: string;
   workspace_id: string;
   user_id: string;
-  role: 'owner' | 'admin' | 'member';
+  role: "owner" | "admin" | "member";
   created_at: string;
 }
 
@@ -65,7 +65,7 @@ export interface Subtask {
 }
 
 export interface AiChatMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   created_at?: string;
 }
@@ -77,7 +77,7 @@ export interface Card {
   description: string | null;
   position: number;
   due_date: string | null;
-  priority: 'low' | 'medium' | 'high' | null;
+  priority: "low" | "medium" | "high" | null;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -124,13 +124,13 @@ export interface PresenceUser {
 
 // Activity types
 export type ActivityType =
-  | 'card_created'
-  | 'card_updated'
-  | 'card_moved'
-  | 'card_commented'
-  | 'assignee_added'
-  | 'assignee_removed'
-  | 'label_added'
-  | 'label_removed'
-  | 'due_date_set'
-  | 'due_date_removed';
+  | "card_created"
+  | "card_updated"
+  | "card_moved"
+  | "card_commented"
+  | "assignee_added"
+  | "assignee_removed"
+  | "label_added"
+  | "label_removed"
+  | "due_date_set"
+  | "due_date_removed";

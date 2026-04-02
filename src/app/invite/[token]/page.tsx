@@ -1,7 +1,7 @@
-import { acceptInviteAction } from '@/entities/workspace/actions';
-import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
-import Link from 'next/link';
+import { acceptInviteAction } from "@/entities/workspace/actions";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import Link from "next/link";
 
 interface Props {
   params: Promise<{ token: string }>;
@@ -11,7 +11,7 @@ export default async function InvitePage({ params }: Props) {
   const { token } = await params;
 
   const cookieStore = await cookies();
-  const authToken = cookieStore.get('token')?.value;
+  const authToken = cookieStore.get("token")?.value;
   if (!authToken) {
     redirect(`/login?next=/invite/${token}`);
   }
@@ -22,9 +22,14 @@ export default async function InvitePage({ params }: Props) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center space-y-3">
-          <h1 className="text-xl font-semibold text-destructive">Invalid Invite</h1>
+          <h1 className="text-xl font-semibold text-destructive">
+            Invalid Invite
+          </h1>
           <p className="text-sm text-muted-foreground">{result.error}</p>
-          <Link href="/workspaces" className="text-sm text-primary hover:underline">
+          <Link
+            href="/workspaces"
+            className="text-sm text-primary hover:underline"
+          >
             Go to workspaces
           </Link>
         </div>
@@ -32,5 +37,5 @@ export default async function InvitePage({ params }: Props) {
     );
   }
 
-  redirect('/workspaces');
+  redirect("/workspaces");
 }

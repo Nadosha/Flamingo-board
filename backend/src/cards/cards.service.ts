@@ -1,8 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { Card, CardDocument } from './schemas/card.schema';
-import { CardActivity, CardActivityDocument } from './schemas/card-activity.schema';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, Types } from "mongoose";
+import { Card, CardDocument } from "./schemas/card.schema";
+import {
+  CardActivity,
+  CardActivityDocument,
+} from "./schemas/card-activity.schema";
 import {
   CreateCardDto,
   UpdateCardDto,
@@ -12,25 +15,28 @@ import {
   ToggleAssigneeDto,
   ToggleLabelDto,
   AppendChatMessageDto,
-} from './dto/card.dto';
-import { BoardsService } from '../boards/boards.service';
-import { Label, LabelDocument } from '../labels/schemas/label.schema';
-import { User, UserDocument } from '../users/schemas/user.schema';
-import { RealtimeGateway } from '../realtime/realtime.gateway';
+} from "./dto/card.dto";
+import { BoardsService } from "../boards/boards.service";
+import { Label, LabelDocument } from "../labels/schemas/label.schema";
+import { User, UserDocument } from "../users/schemas/user.schema";
+import { RealtimeGateway } from "../realtime/realtime.gateway";
 
 @Injectable()
 export class CardsService {
   constructor(
     @InjectModel(Card.name) private cardModel: Model<CardDocument>,
-    @InjectModel(CardActivity.name) private activityModel: Model<CardActivityDocument>,
+    @InjectModel(CardActivity.name)
+    private activityModel: Model<CardActivityDocument>,
     @InjectModel(Label.name) private labelModel: Model<LabelDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private boardsService: BoardsService,
     private realtimeGateway: RealtimeGateway,
   ) {}
 
-  private async getBoardIdForColumn(columnId: Types.ObjectId | string): Promise<string | null> {
-    const ColumnModel = (this.cardModel.db as any).model('Column');
+  private async getBoardIdForColumn(
+    columnId: Types.ObjectId | string,
+  ): Promise<string | null> {
+    const ColumnModel = (this.cardModel.db as any).model("Column");
     const col = await ColumnModel.findById(columnId).exec();
     return col ? col.board_id.toString() : null;
   }
@@ -51,7 +57,7 @@ export class CardsService {
     await this.activityModel.create({
       card_id: card._id,
       user_id: new Types.ObjectId(userId),
-      type: 'card_created',
+      type: "card_created",
       content: `Created card "${dto.title}"`,
     });
 
@@ -70,15 +76,17 @@ export class CardsService {
       updates.due_date = dto.due_date ? new Date(dto.due_date) : null;
     }
 
-    const card = await this.cardModel.findByIdAndUpdate(cardId, updates, { new: true });
-    if (!card) throw new NotFoundException('Card not found');
+    const card = await this.cardModel.findByIdAndUpdate(cardId, updates, {
+      new: true,
+    });
+    if (!card) throw new NotFoundException("Card not found");
 
     if (dto.description !== undefined) {
       await this.activityModel.create({
         card_id: card._id,
         user_id: new Types.ObjectId(userId),
-        type: 'card_updated',
-        content: 'Updated card description',
+        type: "card_updated",
+        content: "Updated card description",
       });
     }
 
@@ -97,15 +105,18 @@ export class CardsService {
       },
       { new: true },
     );
-    if (!card) throw new NotFoundException('Card not found');
+    if (!card) throw new NotFoundException("Card not found");
 
     if (dto.source_column_id !== dto.target_column_id) {
       await this.activityModel.create({
         card_id: card._id,
         user_id: new Types.ObjectId(userId),
-        type: 'card_moved',
-        content: 'Moved card to another column',
-        metadata: { from_column: dto.source_column_id, to_column: dto.target_column_id },
+        type: "card_moved",
+        content: "Moved card to another column",
+        metadata: {
+          from_column: dto.source_column_id,
+          to_column: dto.target_column_id,
+        },
       });
     }
 
@@ -131,7 +142,9 @@ export class CardsService {
     const card = await this.cardModel.findById(cardId).exec();
     const boardId = card ? await this.getBoardIdForCard(card) : null;
     await this.cardModel.deleteOne({ _id: cardId });
-    await this.activityModel.deleteMany({ card_id: new Types.ObjectId(cardId) });
+    await this.activityModel.deleteMany({
+      card_id: new Types.ObjectId(cardId),
+    });
     if (boardId) this.realtimeGateway.broadcastBoardUpdate(boardId);
     return { success: true };
   }
@@ -146,7 +159,7 @@ export class CardsService {
     await this.activityModel.create({
       card_id: new Types.ObjectId(cardId),
       user_id: new Types.ObjectId(userId),
-      type: 'card_commented',
+      type: "card_commented",
       content: dto.content,
     });
     return { success: true };
@@ -162,8 +175,8 @@ export class CardsService {
     await this.activityModel.create({
       card_id: new Types.ObjectId(cardId),
       user_id: new Types.ObjectId(userId),
-      type: 'assignee_added',
-      content: 'Added assignee',
+      type: "assignee_added",
+      content: "Added assignee",
       metadata: { assignee_id: dto.user_id },
     });
     if (card) {
@@ -197,8 +210,8 @@ export class CardsService {
     await this.activityModel.create({
       card_id: new Types.ObjectId(cardId),
       user_id: new Types.ObjectId(userId),
-      type: 'label_added',
-      content: 'Added a label',
+      type: "label_added",
+      content: "Added a label",
       metadata: { label_id: dto.label_id },
     });
     if (card) {
@@ -225,10 +238,12 @@ export class CardsService {
   async getBoardWithColumns(boardId: string) {
     const board = await this.boardsService.getBoardById(boardId);
 
-    const { Column } = await import('../columns/schemas/column.schema');
-    const ColumnModel: Model<any> = (this.cardModel.db as any).model('Column');
+    const { Column } = await import("../columns/schemas/column.schema");
+    const ColumnModel: Model<any> = (this.cardModel.db as any).model("Column");
 
-    const columns = await ColumnModel.find({ board_id: new Types.ObjectId(boardId) })
+    const columns = await ColumnModel.find({
+      board_id: new Types.ObjectId(boardId),
+    })
       .sort({ position: 1 })
       .exec();
 
@@ -239,33 +254,53 @@ export class CardsService {
       .exec();
 
     // Collect all unique assignee and label ids
-    const allAssigneeIds = [...new Set(cards.flatMap((c) => c.assignee_ids.map((id) => id.toString())))];
-    const allLabelIds = [...new Set(cards.flatMap((c) => c.label_ids.map((id) => id.toString())))];
+    const allAssigneeIds = [
+      ...new Set(
+        cards.flatMap((c) => c.assignee_ids.map((id) => id.toString())),
+      ),
+    ];
+    const allLabelIds = [
+      ...new Set(cards.flatMap((c) => c.label_ids.map((id) => id.toString()))),
+    ];
 
     const [users, labels] = await Promise.all([
       allAssigneeIds.length
-        ? this.userModel.find({ _id: { $in: allAssigneeIds.map((id) => new Types.ObjectId(id)) } }).exec()
+        ? this.userModel
+            .find({
+              _id: { $in: allAssigneeIds.map((id) => new Types.ObjectId(id)) },
+            })
+            .exec()
         : [],
       allLabelIds.length
-        ? this.labelModel.find({ _id: { $in: allLabelIds.map((id) => new Types.ObjectId(id)) } }).exec()
+        ? this.labelModel
+            .find({
+              _id: { $in: allLabelIds.map((id) => new Types.ObjectId(id)) },
+            })
+            .exec()
         : [],
     ]);
 
-    const usersMap = new Map<string, UserDocument>(users.map((u) => [u._id.toString(), u] as [string, UserDocument]));
-    const labelsMap = new Map<string, LabelDocument>(labels.map((l) => [l._id.toString(), l] as [string, LabelDocument]));
+    const usersMap = new Map<string, UserDocument>(
+      users.map((u) => [u._id.toString(), u] as [string, UserDocument]),
+    );
+    const labelsMap = new Map<string, LabelDocument>(
+      labels.map((l) => [l._id.toString(), l] as [string, LabelDocument]),
+    );
 
     const columnsWithCards = columns.map((col) => {
       const colCards = cards
         .filter((c) => c.column_id.toString() === col._id.toString())
-        .map((card) => this.serializeCard(
-          card,
-          card.assignee_ids
-            .map((id) => usersMap.get(id.toString()))
-            .filter(Boolean) as UserDocument[],
-          card.label_ids
-            .map((id) => labelsMap.get(id.toString()))
-            .filter(Boolean) as LabelDocument[],
-        ));
+        .map((card) =>
+          this.serializeCard(
+            card,
+            card.assignee_ids
+              .map((id) => usersMap.get(id.toString()))
+              .filter(Boolean) as UserDocument[],
+            card.label_ids
+              .map((id) => labelsMap.get(id.toString()))
+              .filter(Boolean) as LabelDocument[],
+          ),
+        );
 
       return {
         id: col._id.toString(),
@@ -291,11 +326,11 @@ export class CardsService {
 
   async getBoardMembers(boardId: string) {
     const board = await this.boardsService.getBoardById(boardId);
-    const WorkspaceMember = (this.cardModel.db as any).model('WorkspaceMember');
+    const WorkspaceMember = (this.cardModel.db as any).model("WorkspaceMember");
     const members = await WorkspaceMember.find({
       workspace_id: new Types.ObjectId(board.workspace_id.toString()),
     })
-      .populate('user_id', 'email full_name avatar_url')
+      .populate("user_id", "email full_name avatar_url")
       .exec();
 
     return members.map((m: any) => ({
@@ -336,19 +371,27 @@ export class CardsService {
         : [],
       this.activityModel
         .find({ card_id: card._id })
-        .populate('user_id', 'full_name avatar_url')
+        .populate("user_id", "full_name avatar_url")
         .sort({ created_at: -1 })
         .exec(),
     ]);
 
-    const usersMap = new Map<string, UserDocument>(users.map((u) => [u._id.toString(), u] as [string, UserDocument]));
-    const labelsMap = new Map<string, LabelDocument>(labels.map((l) => [l._id.toString(), l] as [string, LabelDocument]));
+    const usersMap = new Map<string, UserDocument>(
+      users.map((u) => [u._id.toString(), u] as [string, UserDocument]),
+    );
+    const labelsMap = new Map<string, LabelDocument>(
+      labels.map((l) => [l._id.toString(), l] as [string, LabelDocument]),
+    );
 
     return {
       ...this.serializeCard(
         card,
-        assigneeIds.map((id) => usersMap.get(id.toString())).filter(Boolean) as UserDocument[],
-        lblIds.map((id) => labelsMap.get(id.toString())).filter(Boolean) as LabelDocument[],
+        assigneeIds
+          .map((id) => usersMap.get(id.toString()))
+          .filter(Boolean) as UserDocument[],
+        lblIds
+          .map((id) => labelsMap.get(id.toString()))
+          .filter(Boolean) as LabelDocument[],
       ),
       card_activities: activities.map((a) => {
         const profile = a.user_id as any;
@@ -358,7 +401,10 @@ export class CardsService {
           content: a.content,
           created_at: (a as any).created_at,
           profile: profile
-            ? { full_name: profile.full_name ?? null, avatar_url: profile.avatar_url ?? null }
+            ? {
+                full_name: profile.full_name ?? null,
+                avatar_url: profile.avatar_url ?? null,
+              }
             : null,
         };
       }),
@@ -397,17 +443,21 @@ export class CardsService {
         },
       })),
       priority: card.priority ?? null,
-      subtasks: (card.subtasks ?? []).map((s) => ({ title: s.title, done: s.done })),
+      subtasks: (card.subtasks ?? []).map((s) => ({
+        title: s.title,
+        done: s.done,
+      })),
     };
   }
 
   async toggleSubtask(cardId: string, userId: string, index: number) {
     const card = await this.cardModel.findById(cardId).exec();
-    if (!card) throw new NotFoundException('Card not found');
+    if (!card) throw new NotFoundException("Card not found");
     const subtasks = card.subtasks ?? [];
-    if (index < 0 || index >= subtasks.length) throw new NotFoundException('Subtask not found');
+    if (index < 0 || index >= subtasks.length)
+      throw new NotFoundException("Subtask not found");
     subtasks[index].done = !subtasks[index].done;
-    card.markModified('subtasks');
+    card.markModified("subtasks");
     await card.save();
     const boardId = await this.getBoardIdForCard(card);
     if (boardId) this.realtimeGateway.broadcastBoardUpdate(boardId);
@@ -415,8 +465,11 @@ export class CardsService {
   }
 
   async getChatHistory(cardId: string) {
-    const card = await this.cardModel.findById(cardId).select('chatHistory').exec();
-    if (!card) throw new NotFoundException('Card not found');
+    const card = await this.cardModel
+      .findById(cardId)
+      .select("chatHistory")
+      .exec();
+    if (!card) throw new NotFoundException("Card not found");
     return (card.chatHistory ?? []).map((m) => ({
       role: m.role,
       content: m.content,
@@ -426,10 +479,14 @@ export class CardsService {
 
   async appendChatMessage(cardId: string, dto: AppendChatMessageDto) {
     const card = await this.cardModel.findById(cardId).exec();
-    if (!card) throw new NotFoundException('Card not found');
+    if (!card) throw new NotFoundException("Card not found");
     card.chatHistory = card.chatHistory ?? [];
-    card.chatHistory.push({ role: dto.role, content: dto.content, created_at: new Date() } as any);
-    card.markModified('chatHistory');
+    card.chatHistory.push({
+      role: dto.role,
+      content: dto.content,
+      created_at: new Date(),
+    } as any);
+    card.markModified("chatHistory");
     await card.save();
     return { ok: true };
   }

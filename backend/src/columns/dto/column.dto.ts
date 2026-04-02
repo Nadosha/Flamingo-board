@@ -1,5 +1,13 @@
-import { IsString, MinLength, IsNumber, IsOptional, IsArray, ValidateNested, IsMongoId } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsString,
+  MinLength,
+  IsNumber,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+  IsMongoId,
+} from "class-validator";
+import { Type } from "class-transformer";
 
 export class CreateColumnDto {
   @IsString()
