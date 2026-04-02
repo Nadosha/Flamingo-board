@@ -137,6 +137,13 @@ Open [http://localhost:3000](http://localhost:3000).
 | `OPENAI_API_KEY` | —                                | OpenAI API key (required for AI) |
 | `OPENAI_MODEL`   | `gpt-4o-mini`                    | OpenAI model name                |
 
+> **To enable AI features**, create `backend/.env` from `backend/.env.example` and set your `OPENAI_API_KEY`:
+> ```bash
+> cp backend/.env.example backend/.env
+> # then edit backend/.env and replace OPENAI_API_KEY=sk-... with your real key
+> ```
+> All four AI agents (prioritizer, decomposer, standup, card chat) will be unavailable without a valid key.
+
 ---
 
 ## AI Features
